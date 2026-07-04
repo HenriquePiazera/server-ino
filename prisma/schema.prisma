@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Plan {
+  trial
+  solo
+  professional
+  team
+}
+
+enum PlanStatus {
+  active
+  past_due
+  canceled
+  trialing
+}
+
+enum AppointmentStatus {
+  scheduled
+  awaiting_confirmation
+  confirmed
+  completed
+  canceled
+}
+
+enum ConfirmationStatus {
+  pending
+  confirmed
+  expired
+}
+
+enum PaymentMethod {
+  cash
+  pix
+  credit_card
+  debit_card
+  transfer
+  other
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  canceled
+}
+
+enum TeamMemberStatus {
+  pending
+  active
+  inactive
+}
+
+model User {
+  id                 String     @id @default(cuid())
+  name               String
+  email              String     @unique
+  password_hash      String
+  plan               Plan       @default(trial)
+  plan_status        PlanStatus @default(trialing)
+  trial_ends_at      DateTime?
+  subscription_id    String?
+  storage_used_bytes BigInt     @default(0)
+  encrypted_dek      String
+  dek_created_at     DateTime   @default(now())
+  onboarding_step    Int        @default(0)
+  onboarding_completed_at DateTime?
+  created_at         DateTime   @default(now())
+  updated_at         DateTime   @updatedAt
+
+  clients              Client[]
+  appointments         Appointment[]
+  service_records      ServiceRecord[]
+  attachments          Attachment[]
+  payments             Payment[]
+  audit_logs           AuditLog[]
+  password_reset_tokens PasswordResetToken[]
+  owned_teams          TeamMember[] @relation("TeamOwner")
+  team_memberships     TeamMember[] @relation("TeamMembership")
+
+  @@map("users")
+}
+
+model Client {
+  id                String    @id @default(cuid())
+  user_id           String
+  name              String
+  phone             String
+  email             String?
+  birth_date        DateTime?
+  notes             String?
+  push_subscription String?
+  pwa_installed_at  DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  user          User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  service_records ServiceRecord[]
+  attachments   Attachment[]
+  payments      Payment[]
+
+  @@index([user_id])
+  @@map("clients")
+}
+
+model Appointment {
+  id             String            @id @default(cuid())
+  client_id      String
+  user_id        String
+  start_time     DateTime
+  end_time       DateTime
+  status         AppointmentStatus @default(scheduled)
+  notes          String?
+  buffer_minutes Int               @default(0)
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
+
+  user           User                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  client         Client                    @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  confirmations  AppointmentConfirmation[]
+  service_records ServiceRecord[]
+  payments       Payment[]
+
+  @@index([user_id])
+  @@index([user_id, start_time])
+  @@map("appointments")
+}
+
+model AppointmentConfirmation {
+  id             String             @id @default(cuid())
+  appointment_id String
+  token          String             @unique
+  status         ConfirmationStatus @default(pending)
+  sent_at        DateTime           @default(now())
+  confirmed_at   DateTime?
+
+  appointment Appointment @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
+
+  @@map("appointment_confirmations")
+}
+
+model ServiceRecord {
+  id             String   @id @default(cuid())
+  appointment_id String
+  client_id      String
+  user_id        String
+  description    String
+  evolution      String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user        User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  client      Client       @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  appointment Appointment  @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+
+  @@index([user_id])
+  @@map("service_records")
+}
+
+model Attachment {
+  id                String   @id @default(cuid())
+  client_id         String
+  service_record_id String?
+  user_id           String
+  file_url          String
+  file_name         String
+  file_type         String
+  file_size_bytes   BigInt
+  uploaded_at       DateTime @default(now())
+
+  user           User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  client         Client         @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  service_record ServiceRecord? @relation(fields: [service_record_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@map("attachments")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  client_id      String
+  appointment_id String?
+  user_id        String
+  amount         Decimal       @db.Decimal(10, 2)
+  payment_method PaymentMethod
+  status         PaymentStatus @default(pending)
+  paid_at        DateTime?
+  created_at     DateTime      @default(now())
+
+  user        User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  client      Client       @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointment_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@map("payments")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  user_id    String
+  operation  String
+  entity     String
+  entity_id  String
+  ip_address String?
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  user_id    String
+  token      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("password_reset_tokens")
+}
+
+model TeamMember {
+  id        String           @id @default(cuid())
+  owner_id  String
+  member_id String
+  status    TeamMemberStatus @default(pending)
+  created_at DateTime        @default(now())
+
+  owner  User @relation("TeamOwner", fields: [owner_id], references: [id], onDelete: Cascade)
+  member User @relation("TeamMembership", fields: [member_id], references: [id], onDelete: Cascade)
+
+  @@unique([owner_id, member_id])
+  @@map("team_members")
+}

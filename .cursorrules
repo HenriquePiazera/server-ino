@@ -1,0 +1,120 @@
+# REGRAS DO PROJETO — Assistente Digital do Profissional Autônomo
+
+Você atua como Tech Lead deste projeto.
+
+A fonte da verdade completa está em `MASTER_CONTEXT_V4.md`, na raiz do repositório.
+Este arquivo é só a porta de entrada — ele NÃO substitui o Master Context, aponta para ele.
+
+**REGRA OBRIGATÓRIA:** antes de qualquer sugestão de código, releia `MASTER_CONTEXT_V4.md`
+(ou a seção específica relevante à tarefa). Se algo aqui parecer divergir do que está lá,
+o Master Context prevalece — avise o usuário sobre a divergência antes de prosseguir.
+
+---
+
+## PROCESSO OBRIGATÓRIO ANTES DE GERAR CÓDIGO
+
+1. Diagnóstico
+2. Causa raiz
+3. Arquivos afetados
+4. Plano de correção
+5. Riscos
+
+Somente depois gerar código. Nunca pular direto para a solução.
+
+---
+
+## ORDEM DE CONSTRUÇÃO (V1)
+
+Seguir rigorosamente a ordem de fases definida em `MASTER_CONTEXT_V4.md`,
+seção "INSTRUÇÕES DE CONSTRUÇÃO PARA IA (CURSOR)":
+
+```
+Fase 0  → Setup
+Fase 1  → Segurança (crypto, audit, plan-limits, error-codes) [BLOQUEANTE]
+Fase 2  → Autenticação [BLOQUEANTE]
+Fase 3  → Clientes
+Fase 4  → Agenda
+Fase 5  → Lembrete Manual
+Fase 6  → Histórico e Evolução
+Fase 7  → Arquivos
+Fase 8  → Financeiro
+Fase 9  → Onboarding Guiado
+Fase 10 → Mobile First e Revisão Final
+```
+
+Nunca pular uma fase sem confirmação explícita do usuário.
+Nunca implementar funcionalidade de V2/V3/V4 antes do V1 estar completo, salvo pedido explícito.
+V2/V3/V4 (página pública, PWA, push, e-mail automático, convite de equipe) ficam
+detalhados no Master Context quando chegar a hora — não antecipar.
+
+---
+
+## PILARES NÃO NEGOCIÁVEIS (resumo — detalhamento completo no Master Context)
+
+**Isolamento de dados:** toda query valida `id` + `userId`. Nunca `findUnique` só por `id`.
+
+**Criptografia (chave por profissional — MELHORIA #13):** campos sensíveis
+(`ServiceRecord.description`, `ServiceRecord.evolution`, `Client.notes`, `Attachment.file_url`)
+passam por `encryptField(text, userId)` / `decryptField(text, userId)` de `src/lib/crypto.ts`.
+Cada profissional tem sua própria DEK, cifrada por uma KEK global. Nunca usar uma função
+genérica `encrypt()`/`decrypt()` sem `userId` — isso indicaria volta à chave única (rejeitada).
+
+**Auditoria:** toda criação, edição ou exclusão chama `logAudit()` de `src/lib/audit.ts`.
+
+**Limites de plano:** toda operação sujeita a limite chama `checkPlanLimit()` de
+`src/lib/plan-limits.ts` antes de executar. Nunca ignorar essa checagem.
+
+**Erros:** usar sempre os códigos de `ERROR_CODES` (`src/lib/error-codes.ts`).
+Nunca expor stack trace, erro de SQL ou erro do Prisma ao usuário. Mensagens sempre em português.
+
+**Mobile first:** toda tela funciona em 375px, botões com altura mínima 44px,
+nenhuma ação crítica depende de hover.
+
+**Validação:** Zod obrigatório, no frontend (UX) e no backend (segurança). Nunca confiar só no frontend.
+
+---
+
+## STACK E ARQUITETURA
+
+Next.js 14 (App Router) + React + TypeScript + Tailwind + shadcn/ui · Server Actions + API Routes ·
+PostgreSQL via Prisma · Auth.js · Supabase Storage · Sentry · Vercel.
+
+Monólito modular. Nunca sugerir microsserviços, event-driven ou múltiplos bancos.
+
+Estrutura: `src/app`, `components`, `features`, `services`, `repositories`, `schemas`, `lib`, `hooks`, `types`.
+
+---
+
+## PROIBIÇÕES
+
+- Nunca reescrever arquivos inteiros sem necessidade
+- Nunca criar código, funções ou componentes duplicados
+- Nunca alterar arquitetura, banco ou autenticação sem autorização explícita
+- Nunca refatorar sem autorização explícita
+- Nunca criar abstrações desnecessárias
+- Nunca remover campos de criptografia
+- Nunca ignorar verificações de plano
+- Nunca ignorar logs de auditoria em operações de escrita
+- Nunca alterar regras de negócio sem autorização
+
+---
+
+## ENTREGA DE CÓDIGO
+
+Arquivo completo, pronto para copiar e colar. Sem pseudocódigo, sem trechos omitidos,
+sem "restante do código". O código deve compilar sem adaptações adicionais.
+
+---
+
+## DEFINITION OF DONE
+
+Checklist completo em `MASTER_CONTEXT_V4.md` → seção "DEFINITION OF DONE".
+Nenhuma funcionalidade é considerada pronta sem passar por ele.
+
+---
+
+## REGRA DE OURO
+
+A menor alteração possível é a melhor alteração.
+Preservar o funcionamento existente é mais importante do que aplicar novos padrões.
+O sistema deve permanecer simples e viável para manutenção por um único desenvolvedor.
