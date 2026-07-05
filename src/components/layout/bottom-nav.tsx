@@ -2,22 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  Calendar,
-  Users,
-  FileText,
-  Wallet,
-  LayoutDashboard,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const navItems = [
-  { href: '/dashboard', label: 'Início', icon: LayoutDashboard },
-  { href: '/clients', label: 'Clientes', icon: Users },
-  { href: '/appointments', label: 'Agenda', icon: Calendar },
-  { href: '/records', label: 'Histórico', icon: FileText },
-  { href: '/payments', label: 'Financeiro', icon: Wallet },
-]
+import { dashboardNavItems } from '@/components/layout/nav-items'
 
 export function BottomNav() {
   const pathname = usePathname()
@@ -25,7 +11,7 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-safe md:hidden">
       <div className="flex items-center justify-around px-2 py-2">
-        {navItems.map((item) => {
+        {dashboardNavItems.map((item) => {
           const Icon = item.icon
           const active = pathname.startsWith(item.href)
           return (
