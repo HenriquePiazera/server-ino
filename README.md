@@ -1,4 +1,4 @@
-# server ino
+# server-ino
 
 SaaS de agenda e gestão para profissionais autônomos.
 

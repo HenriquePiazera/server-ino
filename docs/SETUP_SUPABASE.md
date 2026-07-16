@@ -1,4 +1,4 @@
-# Setup Supabase — server ino
+# Setup Supabase — server-ino
 
 ## 1. Criar projeto
 

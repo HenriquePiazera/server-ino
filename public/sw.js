@@ -1,5 +1,5 @@
 self.addEventListener('push', (event) => {
-  let data = { title: 'server ino', body: 'Nova notificação', url: '/' }
+  let data = { title: 'server-ino', body: 'Nova notificação', url: '/' }
   try {
     if (event.data) {
       data = { ...data, ...event.data.json() }

@@ -1,4 +1,4 @@
-export const APP_NAME = 'server ino'
+export const APP_NAME = 'server-ino'
 
 export const APP_TAGLINE =
 

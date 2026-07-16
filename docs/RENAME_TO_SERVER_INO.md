@@ -1,61 +1,38 @@
-# Renomear projeto para server ino
+# Projeto server-ino — nomenclatura
 
-O código já usa **server ino** como nome. Falta renomear pastas no disco e no GitHub.
+O projeto usa **`server-ino`** em todo lugar (pastas, npm, GitHub, Vercel).
 
-## 1. Feche o Cursor
+## Estrutura atual
 
-A pasta `agenda-multipro` precisa estar livre para renomear.
+| Item | Valor |
+|------|-------|
+| Pasta local | `D:\server-ino` |
+| Repositório GitHub | `HenriquePiazera/server-ino` |
+| Nome npm | `server-ino` |
+| Vercel Project Name | `server-ino` |
+| URL padrão | `https://server-ino.vercel.app` |
 
-## 2. Renomeie a pasta do projeto (PowerShell)
+## GitHub — renomear repositório
 
-Abra o PowerShell e execute:
-
-```powershell
-# Move o repositório git para D:\server-ino
-Move-Item -Path "D:\saas-agenda-multipro\agenda-multipro" -Destination "D:\server-ino"
-```
-
-Se `D:\server-ino` já existir, apague a pasta vazia `D:\saas-agenda-multipro\server-ino` antes (se houver).
-
-## 3. Abra no Cursor
-
-**File → Open Folder →** `D:\server-ino`
-
-## 4. Renomeie no GitHub
+Se o remote ainda apontar para `agenda-multipro`:
 
 1. Acesse https://github.com/HenriquePiazera/agenda-multipro/settings
 2. **Repository name** → `server-ino` → **Rename**
-
-## 5. Atualize o remote git
-
-No terminal, dentro de `D:\server-ino`:
-
-```powershell
-git remote set-url origin https://github.com/HenriquePiazera/server-ino.git
-git remote -v
-```
-
-## 6. (Opcional) Limpe a pasta pai antiga
-
-A pasta `D:\saas-agenda-multipro` pode ficar com lixo (`package.json` wrapper, `.cursor`, etc.). Se não precisar mais:
-
-```powershell
-Remove-Item -Recurse -Force "D:\saas-agenda-multipro"
-```
-
-## 7. Deploy na Vercel
-
-- **New Project** → importe `HenriquePiazera/server-ino`
-- **Project Name:** `server-ino`
-- **Root Directory:** `.` (vazio / raiz)
-- URL: `https://server-ino.vercel.app`
-- `NEXTAUTH_URL=https://server-ino.vercel.app`
-
-## 8. Commit e push
+3. No terminal:
 
 ```powershell
 cd D:\server-ino
-git add -A
-git commit -m "rename project to server-ino"
-git push -u origin main
+git remote set-url origin https://github.com/HenriquePiazera/server-ino.git
+git remote -v
+git push
 ```
+
+## Pasta local — renomear (se ainda estiver em `saas-server-ino`)
+
+Feche o Cursor e execute:
+
+```powershell
+Move-Item -Path "D:\saas-server-ino" -Destination "D:\server-ino"
+```
+
+Reabra **File → Open Folder →** `D:\server-ino`

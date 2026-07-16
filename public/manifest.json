@@ -1,6 +1,6 @@
 {
-  "name": "server ino",
-  "short_name": "server ino",
+  "name": "server-ino",
+  "short_name": "server-ino",
   "description": "Agende seu atendimento",
   "start_url": "/",
   "display": "standalone",

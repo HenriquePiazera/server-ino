@@ -1,6 +1,6 @@
 # Deploy Meta A — Beta gratuito (sem CNPJ / sem cobrança)
 
-Guia para colocar o **server ino** no ar para amigos testarem, com `BILLING_ENABLED=false`.
+Guia para colocar o **server-ino** no ar para amigos testarem, com `BILLING_ENABLED=false`.
 
 ## 1. Pré-requisitos
 

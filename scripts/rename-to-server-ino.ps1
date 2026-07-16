@@ -1,7 +1,7 @@
 # Execute com o Cursor FECHADO
 $ErrorActionPreference = "Stop"
 
-$source = "D:\saas-agenda-multipro\agenda-multipro"
+$source = "D:\saas-server-ino"
 $target = "D:\server-ino"
 
 if (-not (Test-Path $source)) {
@@ -22,6 +22,6 @@ Move-Item -Path $source -Destination $target
 Write-Host ""
 Write-Host "Concluido!"
 Write-Host "1. Abra D:\server-ino no Cursor"
-Write-Host "2. Renomeie o repo no GitHub para server-ino"
+Write-Host "2. Renomeie o repo no GitHub para server-ino (se ainda nao fez)"
 Write-Host "3. git remote set-url origin https://github.com/HenriquePiazera/server-ino.git"
 Write-Host "4. Veja docs/RENAME_TO_SERVER_INO.md"
