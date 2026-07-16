@@ -6,7 +6,11 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { generateEncryptedDek } from '@/lib/crypto'
+import { generatePublicSlug } from '@/lib/slug'
 import { logAudit } from '@/lib/audit'
+import { isEmailAllowedForBeta } from '@/lib/beta'
+import { getAppBaseUrlSync } from '@/lib/app-url'
+import { sendPasswordResetEmail } from '@/services/email.service'
 import {
   actionError,
   getClientIp,
@@ -33,8 +37,13 @@ export async function registerAction(
     return actionError('INVALID_INPUT')
   }
 
+  const email = parsed.data.email.toLowerCase()
+  if (!isEmailAllowedForBeta(email)) {
+    return actionError('BETA_INVITE_ONLY')
+  }
+
   const existing = await prisma.user.findFirst({
-    where: { email: parsed.data.email.toLowerCase() },
+    where: { email },
   })
 
   if (existing) {
@@ -51,6 +60,7 @@ export async function registerAction(
       email: parsed.data.email.toLowerCase(),
       password_hash: passwordHash,
       encrypted_dek: encryptedDek,
+      public_slug: generatePublicSlug(parsed.data.name),
       plan: 'trial',
       plan_status: 'trialing',
       trial_ends_at: trialEndsAt,
@@ -161,14 +171,23 @@ export async function forgotPasswordAction(
     },
   })
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
+  const baseUrl = getAppBaseUrlSync()
   const resetUrl = `${baseUrl}/reset-password?token=${token}`
 
-  if (process.env.NODE_ENV === 'development') {
+  const emailResult = await sendPasswordResetEmail({
+    to: user.email,
+    userName: user.name,
+    resetUrl,
+  })
+
+  if (!emailResult.sent && process.env.NODE_ENV === 'development') {
     console.log('[DEV] Link de recuperação:', resetUrl)
   }
 
-  return { success: true, data: { resetUrl } }
+  return {
+    success: true,
+    data: process.env.NODE_ENV === 'development' ? { resetUrl } : undefined,
+  }
 }
 
 export async function resetPasswordAction(
@@ -210,7 +229,7 @@ export async function resetPasswordAction(
 export async function registerAndLoginAction(formData: FormData): Promise<void> {
   const result = await registerAction(formData)
   if (!result.success) {
-    throw new Error(result.error)
+    redirect(`/register?errorCode=${result.errorCode ?? 'INVALID_INPUT'}`)
   }
 
   const loginResult = await loginAction(formData)

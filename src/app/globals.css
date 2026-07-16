@@ -6,52 +6,138 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/*
+  Paleta oficial: "Azul suave"
+  - Corporativo, confiável, limpo
+  - Menos associado a saúde/clínica que o teal ou sálvia
+  - Aplicada em landing e app (jul/2026)
+*/
+@layer components {
+  .brand-surface {
+    @apply min-h-screen bg-background text-foreground;
+  }
+
+  .brand-auth-surface {
+    @apply brand-surface relative flex items-center justify-center overflow-hidden p-4;
+  }
+
+  .brand-auth-surface::before {
+    content: '';
+    @apply pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/10 blur-3xl;
+  }
+
+  .brand-auth-surface::after {
+    content: '';
+    @apply pointer-events-none absolute -bottom-16 -left-16 size-64 rounded-full bg-primary/5 blur-3xl;
+  }
+
+  .brand-header {
+    @apply sticky top-0 z-50 border-b bg-background/95 backdrop-blur;
+  }
+
+  .brand-header-inner {
+    @apply mx-auto flex max-w-5xl items-center justify-between px-4 py-4;
+  }
+
+  .brand-content {
+    @apply mx-auto w-full max-w-5xl flex-1 px-4 py-6;
+  }
+
+  .brand-content-narrow {
+    @apply w-full max-w-md;
+  }
+
+  .brand-content-wide {
+    @apply w-full max-w-lg;
+  }
+
+  .brand-sidebar {
+    @apply sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r bg-background md:flex;
+  }
+
+  .brand-nav-link {
+    @apply flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors;
+  }
+
+  .brand-nav-link-active {
+    @apply bg-primary/10 font-medium text-primary;
+  }
+
+  .brand-nav-link-inactive {
+    @apply text-muted-foreground hover:bg-muted hover:text-foreground;
+  }
+
+  .brand-page-title {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  .brand-page-description {
+    @apply text-muted-foreground mt-1 text-sm;
+  }
+
+  .brand-hero {
+    @apply relative overflow-hidden bg-gradient-to-b from-secondary via-background to-background;
+  }
+
+  .brand-section-muted {
+    @apply border-y bg-muted/60;
+  }
+
+  .brand-internal-badge {
+    @apply text-primary bg-primary/10 inline-flex w-fit rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
 }
 
 @layer base {
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --background: oklch(0.988 0.006 250);
+    --foreground: oklch(0.24 0.04 255);
+    --card: oklch(1 0.004 250);
+    --card-foreground: oklch(0.24 0.04 255);
+    --popover: oklch(1 0.004 250);
+    --popover-foreground: oklch(0.24 0.04 255);
+    --primary: oklch(0.48 0.12 255);
+    --primary-foreground: oklch(0.99 0.005 250);
+    --secondary: oklch(0.94 0.03 255);
+    --secondary-foreground: oklch(0.34 0.07 255);
+    --muted: oklch(0.95 0.02 255);
+    --muted-foreground: oklch(0.5 0.04 255);
+    --accent: oklch(0.92 0.04 255);
+    --accent-foreground: oklch(0.34 0.07 255);
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: oklch(0.89 0.025 255);
+    --input: oklch(0.89 0.025 255);
+    --ring: oklch(0.48 0.12 255);
     --radius: 0.625rem;
   }
 
   .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
+    --background: oklch(0.18 0.03 255);
+    --foreground: oklch(0.96 0.01 250);
+    --card: oklch(0.22 0.035 255);
+    --card-foreground: oklch(0.96 0.01 250);
+    --popover: oklch(0.22 0.035 255);
+    --popover-foreground: oklch(0.96 0.01 250);
+    --primary: oklch(0.68 0.11 255);
+    --primary-foreground: oklch(0.18 0.04 255);
+    --secondary: oklch(0.28 0.04 255);
+    --secondary-foreground: oklch(0.92 0.02 250);
+    --muted: oklch(0.28 0.03 255);
+    --muted-foreground: oklch(0.68 0.04 255);
+    --accent: oklch(0.3 0.05 255);
+    --accent-foreground: oklch(0.92 0.02 250);
     --destructive: oklch(0.704 0.191 22.216);
     --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --border: oklch(0.96 0.02 250 / 12%);
+    --input: oklch(0.96 0.02 250 / 15%);
+    --ring: oklch(0.68 0.11 255);
   }
 
   * {

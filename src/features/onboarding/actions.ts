@@ -1,6 +1,6 @@
 'use server'
 
-import { redirect } from 'next/navigation'
+import { refreshAndRedirect } from '@/lib/refresh'
 import { prisma } from '@/lib/prisma'
 import { requireUserId } from '@/lib/session'
 
@@ -37,7 +37,7 @@ export async function completeOnboardingAction(): Promise<void> {
       onboarding_completed_at: new Date(),
     },
   })
-  redirect('/dashboard')
+  refreshAndRedirect('/dashboard')
 }
 
 export async function skipToDashboardIfOnboarded(): Promise<void> {
@@ -47,6 +47,6 @@ export async function skipToDashboardIfOnboarded(): Promise<void> {
     select: { onboarding_completed_at: true },
   })
   if (user?.onboarding_completed_at) {
-    redirect('/dashboard')
+    refreshAndRedirect('/dashboard')
   }
 }

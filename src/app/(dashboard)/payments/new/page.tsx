@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { refreshAndRedirect } from '@/lib/refresh'
 import { PageHeader } from '@/components/layout/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -7,24 +7,32 @@ import { listClientsAction } from '@/features/clients/actions'
 import { listAppointmentsAction } from '@/features/appointments/actions'
 import { createPaymentAction } from '@/features/payments/actions'
 import { SubmitButton } from '@/components/forms/submit-button'
+import { ResettableForm } from '@/components/forms/resettable-form'
+import { formKeyFromSearchParams } from '@/lib/form-key'
 
-export default async function NewPaymentPage() {
+export default async function NewPaymentPage({
+  searchParams,
+}: {
+  searchParams?: { refreshed?: string | string[]; error?: string }
+}) {
   const [clients, appointments] = await Promise.all([
     listClientsAction(),
     listAppointmentsAction(),
   ])
+  const formKey = formKeyFromSearchParams(searchParams)
 
   return (
     <div>
-      <PageHeader title="Novo pagamento" />
+      <PageHeader title="Novo pagamento" backHref="/payments" />
       <Card>
         <CardContent className="pt-6">
-          <form
+          <ResettableForm
+            formKey={formKey}
             action={async (formData) => {
               'use server'
               const result = await createPaymentAction(formData)
-              if (result.success) redirect('/payments')
-              redirect('/payments/new?error=1')
+              if (result.success) refreshAndRedirect('/payments')
+              refreshAndRedirect('/payments/new?error=1')
             }}
             className="space-y-4"
           >
@@ -101,7 +109,7 @@ export default async function NewPaymentPage() {
               </select>
             </div>
             <SubmitButton>Salvar pagamento</SubmitButton>
-          </form>
+          </ResettableForm>
         </CardContent>
       </Card>
     </div>

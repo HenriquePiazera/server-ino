@@ -11,11 +11,15 @@ import {
   type ActionResult,
 } from '@/lib/session'
 import { appointmentSchema } from '@/schemas/appointment.schema'
+import { isPastDateTime } from '@/lib/datetime'
 import {
   checkAppointmentConflict,
   formatConflictMessage,
 } from '@/services/appointment-conflict.service'
 import { buildReminderMessage } from '@/services/reminder.service'
+import { sendAppointmentNotification } from '@/services/notification.service'
+import { getTeamMemberIds } from '@/lib/team'
+import { randomBytes } from 'crypto'
 
 export type AppointmentDTO = {
   id: string
@@ -28,10 +32,34 @@ export type AppointmentDTO = {
   buffer_minutes: number
 }
 
+export async function getAppointmentAction(
+  id: string
+): Promise<AppointmentDTO | null> {
+  const userId = await requireUserId()
+  const appointment = await prisma.appointment.findFirst({
+    where: { id, user_id: userId },
+    include: { client: { select: { name: true } } },
+  })
+
+  if (!appointment) return null
+
+  return {
+    id: appointment.id,
+    client_id: appointment.client_id,
+    client_name: appointment.client.name,
+    start_time: appointment.start_time.toISOString(),
+    end_time: appointment.end_time.toISOString(),
+    status: appointment.status,
+    notes: appointment.notes,
+    buffer_minutes: appointment.buffer_minutes,
+  }
+}
+
 export async function listAppointmentsAction(): Promise<AppointmentDTO[]> {
   const userId = await requireUserId()
+  const userIds = await getTeamMemberIds(userId)
   const appointments = await prisma.appointment.findMany({
-    where: { user_id: userId },
+    where: { user_id: { in: userIds } },
     include: { client: { select: { name: true } } },
     orderBy: { start_time: 'asc' },
   })
@@ -69,6 +97,14 @@ export async function createAppointmentAction(
 
   const startTime = new Date(parsed.data.start_time)
   const endTime = new Date(parsed.data.end_time)
+
+  if (isPastDateTime(startTime)) {
+    return actionError('APPOINTMENT_PAST_DATE')
+  }
+
+  if (endTime <= startTime) {
+    return actionError('INVALID_INPUT')
+  }
 
   const conflict = await checkAppointmentConflict(
     userId,
@@ -110,6 +146,40 @@ export async function createAppointmentAction(
   return { success: true, data: { id: appointment.id } }
 }
 
+async function notifyAppointmentChange(
+  appointmentId: string,
+  type: 'cancellation' | 'reschedule',
+  confirmationToken?: string
+) {
+  const appointment = await prisma.appointment.findFirst({
+    where: { id: appointmentId },
+    include: {
+      client: true,
+      user: { select: { name: true } },
+      service: { select: { name: true } },
+    },
+  })
+  if (!appointment) return
+
+  await sendAppointmentNotification({
+    type,
+    appointment: {
+      id: appointment.id,
+      start_time: appointment.start_time,
+      end_time: appointment.end_time,
+      professionalName: appointment.user.name,
+      serviceName: appointment.service?.name ?? 'Atendimento',
+    },
+    client: {
+      id: appointment.client.id,
+      name: appointment.client.name,
+      email: appointment.client.email,
+      push_subscription: appointment.client.push_subscription,
+    },
+    confirmationToken,
+  })
+}
+
 export async function updateAppointmentAction(
   id: string,
   formData: FormData
@@ -134,6 +204,15 @@ export async function updateAppointmentAction(
   const startTime = new Date(parsed.data.start_time)
   const endTime = new Date(parsed.data.end_time)
 
+  const startChanged = startTime.getTime() !== existing.start_time.getTime()
+  if (isPastDateTime(startTime) && startChanged) {
+    return actionError('APPOINTMENT_PAST_DATE')
+  }
+
+  if (endTime <= startTime) {
+    return actionError('INVALID_INPUT')
+  }
+
   const conflict = await checkAppointmentConflict(
     userId,
     startTime,
@@ -149,6 +228,10 @@ export async function updateAppointmentAction(
       errorCode: conflict.type,
     }
   }
+
+  const timeChanged =
+    existing.start_time.getTime() !== startTime.getTime() ||
+    existing.end_time.getTime() !== endTime.getTime()
 
   await prisma.appointment.update({
     where: { id },
@@ -172,6 +255,22 @@ export async function updateAppointmentAction(
   })
 
   revalidatePath('/appointments')
+  revalidatePath(`/appointments/${id}`)
+
+  if (timeChanged && parsed.data.status !== 'canceled') {
+    let token: string | undefined
+    if (parsed.data.status === 'awaiting_confirmation') {
+      const confirmation = await prisma.appointmentConfirmation.create({
+        data: {
+          appointment_id: id,
+          token: randomBytes(32).toString('hex'),
+        },
+      })
+      token = confirmation.token
+    }
+    await notifyAppointmentChange(id, 'reschedule', token)
+  }
+
   return { success: true }
 }
 
@@ -187,6 +286,8 @@ export async function cancelAppointmentAction(id: string): Promise<ActionResult>
     data: { status: 'canceled' },
   })
 
+  await notifyAppointmentChange(id, 'cancellation')
+
   const hdrs = await headers()
   await logAudit({
     userId,
@@ -197,6 +298,7 @@ export async function cancelAppointmentAction(id: string): Promise<ActionResult>
   })
 
   revalidatePath('/appointments')
+  revalidatePath(`/appointments/${id}`)
   return { success: true }
 }
 

@@ -23,9 +23,13 @@ export const ERROR_CODES = {
   INTERNAL_ERROR: 'Erro inesperado. Nossa equipe foi notificada.',
   INVALID_CREDENTIALS: 'E-mail ou senha incorretos.',
   EMAIL_ALREADY_EXISTS: 'Este e-mail já está cadastrado.',
+  BETA_INVITE_ONLY:
+    'Cadastro restrito ao beta. Peça um convite ao administrador.',
   PASSWORD_RESET_INVALID: 'Link de recuperação inválido ou expirado.',
   RECORD_NOT_FOUND: 'Registro de atendimento não encontrado.',
   PAYMENT_NOT_FOUND: 'Pagamento não encontrado.',
+  APPOINTMENT_PAST_DATE:
+    'Não é possível agendar em data ou horário passado.',
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES

@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Agenda Multipro / server ino
 
-## Getting Started
+SaaS de agenda e gestão para profissionais autônomos.
 
-First, run the development server:
+## Desenvolvimento local
 
 ```bash
+cd agenda-multipro
+npm install
+cp .env.example .env   # configure DATABASE_URL e secrets
+npm run db:push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Beta em produção (Meta A)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Guia completo: **[docs/DEPLOY_META_A.md](docs/DEPLOY_META_A.md)**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Validar ambiente:
 
-## Learn More
+```bash
+npm run validate:env
+npm run validate:env -- --production
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts úteis
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Servidor local |
+| `npm run build` | Build de produção |
+| `npm run db:push` | Sincroniza schema Prisma |
+| `npm run db:backfill-v2` | Slugs públicos para usuários antigos |
+| `npm run validate:env` | Valida variáveis de ambiente |
+| `node scripts/test-storage.mjs` | Testa Supabase Storage |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Modo beta
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `BILLING_ENABLED=false` — sem cobrança, tudo liberado
+- `BETA_ALLOWED_EMAILS` — opcional, restringe cadastro a e-mails convidados

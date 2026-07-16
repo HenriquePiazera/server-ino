@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import { cn } from '@/lib/utils'
+import { APP_NAME, APP_TAGLINE } from '@/lib/brand'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -16,8 +17,21 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Agenda Multipro',
-  description: 'A assistente digital do profissional autônomo.',
+  title: APP_NAME,
+  description: APP_TAGLINE,
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: APP_NAME,
+  },
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
+}
+
+export const viewport = {
+  themeColor: '#2563eb',
 }
 
 export default function RootLayout({

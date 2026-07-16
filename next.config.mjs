@@ -5,6 +5,9 @@ const nextConfig = {
   experimental: {
     instrumentationHook: true,
   },
+  images: {
+    dangerouslyAllowSVG: true,
+  },
 }
 
 export default withSentryConfig(nextConfig, {

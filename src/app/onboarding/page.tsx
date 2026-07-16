@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
+import { PageHeader } from '@/components/layout/page-header'
+import { refreshAndRedirect } from '@/lib/refresh'
 import {
   Card,
   CardContent,
@@ -20,8 +22,14 @@ import { createClientAction } from '@/features/clients/actions'
 import { createAppointmentAction } from '@/features/appointments/actions'
 import { createRecordAction } from '@/features/records/actions'
 import { SubmitButton } from '@/components/forms/submit-button'
+import { ResettableForm } from '@/components/forms/resettable-form'
+import { formKeyFromSearchParams } from '@/lib/form-key'
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams?: { refreshed?: string | string[] }
+}) {
   const session = await auth()
   if (!session?.user) redirect('/login')
 
@@ -29,9 +37,15 @@ export default async function OnboardingPage() {
   if (state.completed) redirect('/dashboard')
 
   const step = state.step
+  const formKey = formKeyFromSearchParams(searchParams)
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center p-4">
+    <div>
+      <PageHeader
+        title="Bem-vindo(a)"
+        description={`Passo ${Math.min(step + 1, 3)} de 3 — configure sua conta em minutos`}
+        backHref="/dashboard"
+      />
       <Card>
         <CardHeader>
           <CardTitle>Bem-vindo(a)!</CardTitle>
@@ -47,13 +61,14 @@ export default async function OnboardingPage() {
         </CardHeader>
         <CardContent>
           {step === 0 ? (
-            <form
+            <ResettableForm
+              formKey={`step-0-${formKey}`}
               action={async (formData) => {
                 'use server'
                 const result = await createClientAction(formData)
                 if (result.success) {
                   await advanceOnboardingAction(1)
-                  redirect('/onboarding')
+                  refreshAndRedirect('/onboarding')
                 }
               }}
               className="space-y-4"
@@ -68,11 +83,12 @@ export default async function OnboardingPage() {
                 <Input id="phone" name="phone" required className="min-h-11" />
               </div>
               <SubmitButton>Continuar</SubmitButton>
-            </form>
+            </ResettableForm>
           ) : null}
 
           {step === 1 ? (
-            <form
+            <ResettableForm
+              formKey={`step-1-${formKey}`}
               action={async (formData) => {
                 'use server'
                 const { listClientsAction } = await import('@/features/clients/actions')
@@ -82,7 +98,7 @@ export default async function OnboardingPage() {
                 const result = await createAppointmentAction(formData)
                 if (result.success) {
                   await advanceOnboardingAction(2)
-                  redirect('/onboarding')
+                  refreshAndRedirect('/onboarding')
                 }
               }}
               className="space-y-4"
@@ -110,11 +126,12 @@ export default async function OnboardingPage() {
               </div>
               <input type="hidden" name="buffer_minutes" value="0" />
               <SubmitButton>Continuar</SubmitButton>
-            </form>
+            </ResettableForm>
           ) : null}
 
           {step >= 2 ? (
-            <form
+            <ResettableForm
+              formKey={`step-2-${formKey}`}
               action={async (formData) => {
                 'use server'
                 const { listClientsAction } = await import('@/features/clients/actions')
@@ -143,18 +160,18 @@ export default async function OnboardingPage() {
                 />
               </div>
               <SubmitButton>Concluir onboarding</SubmitButton>
-            </form>
+            </ResettableForm>
           ) : null}
 
           {step > 0 && step < 2 ? (
-            <form action={completeOnboardingAction} className="mt-4">
+            <ResettableForm formKey={`skip-${formKey}`} action={completeOnboardingAction} className="mt-4">
               <Button type="submit" variant="ghost" className="min-h-11 w-full">
                 Pular e ir ao painel
               </Button>
-            </form>
+            </ResettableForm>
           ) : null}
         </CardContent>
       </Card>
-    </main>
+    </div>
   )
 }

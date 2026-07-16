@@ -2,6 +2,10 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { AuthBrand } from '@/components/layout/auth-brand'
+import { BRAND } from '@/lib/brand'
+import './globals.css'
 
 export default function GlobalError({
   error,
@@ -16,19 +20,20 @@ export default function GlobalError({
 
   return (
     <html lang="pt-BR">
-      <body>
-        <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">
-          <h1 className="text-xl font-semibold">Algo deu errado</h1>
-          <p className="text-muted-foreground text-center text-sm">
-            Ocorreu um erro inesperado. Tente novamente.
-          </p>
-          <button
-            type="button"
-            onClick={() => reset()}
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white"
-          >
-            Tentar novamente
-          </button>
+      <body className="font-sans antialiased">
+        <main className={BRAND.authSurface}>
+          <div className="relative z-10 mx-auto w-full max-w-md">
+            <AuthBrand />
+            <div className="rounded-lg border bg-card p-6 text-center shadow-sm">
+              <h1 className={BRAND.pageTitle}>Algo deu errado</h1>
+              <p className={BRAND.pageDescription}>
+                Ocorreu um erro inesperado. Tente novamente.
+              </p>
+              <Button type="button" onClick={() => reset()} className="mt-6 min-h-11">
+                Tentar novamente
+              </Button>
+            </div>
+          </div>
         </main>
       </body>
     </html>

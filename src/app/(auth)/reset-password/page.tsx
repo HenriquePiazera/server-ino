@@ -21,44 +21,42 @@ export default function ResetPasswordPage({
   if (!token) redirect('/forgot-password')
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Nova senha</CardTitle>
-          <CardDescription>Defina uma nova senha para sua conta</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            action={async (formData) => {
-              'use server'
-              formData.set('token', token)
-              const result = await resetPasswordAction(formData)
-              if (!result.success) redirect('/reset-password?token=' + token + '&error=1')
-              const { redirect: nav } = await import('next/navigation')
-              nav('/login')
-            }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="password">Nova senha</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                minLength={8}
-                required
-                className="min-h-11"
-              />
-            </div>
-            <SubmitButton>Salvar senha</SubmitButton>
-          </form>
-          <p className="mt-4 text-center text-sm">
-            <Link href="/login" className="text-primary hover:underline">
-              Voltar ao login
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </main>
+    <Card>
+      <CardHeader>
+        <CardTitle>Nova senha</CardTitle>
+        <CardDescription>Defina uma nova senha para sua conta</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form
+          action={async (formData) => {
+            'use server'
+            formData.set('token', token)
+            const result = await resetPasswordAction(formData)
+            if (!result.success) redirect('/reset-password?token=' + token + '&error=1')
+            const { redirect: nav } = await import('next/navigation')
+            nav('/login')
+          }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="password">Nova senha</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              minLength={8}
+              required
+              className="min-h-11"
+            />
+          </div>
+          <SubmitButton>Salvar senha</SubmitButton>
+        </form>
+        <p className="mt-4 text-center text-sm">
+          <Link href="/login" className="text-primary hover:underline">
+            Voltar ao login
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   )
 }

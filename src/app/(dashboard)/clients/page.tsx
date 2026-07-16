@@ -11,6 +11,7 @@ export default async function ClientsPage() {
       <PageHeader
         title="Clientes"
         description="Gerencie seus clientes"
+        backHref="/dashboard"
         actionHref="/clients/new"
         actionLabel="Novo cliente"
       />

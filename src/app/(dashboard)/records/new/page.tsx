@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { refreshAndRedirect } from '@/lib/refresh'
 import { PageHeader } from '@/components/layout/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -7,24 +7,33 @@ import { listClientsAction } from '@/features/clients/actions'
 import { listAppointmentsAction } from '@/features/appointments/actions'
 import { createRecordAction } from '@/features/records/actions'
 import { SubmitButton } from '@/components/forms/submit-button'
+import { ResettableForm } from '@/components/forms/resettable-form'
+import { formKeyFromSearchParams } from '@/lib/form-key'
+import { selectFieldClassName } from '@/lib/labels'
 
-export default async function NewRecordPage() {
+export default async function NewRecordPage({
+  searchParams,
+}: {
+  searchParams?: { refreshed?: string | string[]; error?: string }
+}) {
   const [clients, appointments] = await Promise.all([
     listClientsAction(),
     listAppointmentsAction(),
   ])
+  const formKey = formKeyFromSearchParams(searchParams)
 
   return (
     <div>
-      <PageHeader title="Novo registro" />
+      <PageHeader title="Novo registro" backHref="/records" />
       <Card>
         <CardContent className="pt-6">
-          <form
+          <ResettableForm
+            formKey={formKey}
             action={async (formData) => {
               'use server'
               const result = await createRecordAction(formData)
-              if (result.success) redirect('/records')
-              redirect('/records/new?error=1')
+              if (result.success) refreshAndRedirect('/records')
+              refreshAndRedirect('/records/new?error=1')
             }}
             className="space-y-4"
           >
@@ -34,7 +43,7 @@ export default async function NewRecordPage() {
                 id="client_id"
                 name="client_id"
                 required
-                className="border-input bg-background flex min-h-11 w-full rounded-md border px-3 text-sm"
+                className={selectFieldClassName}
               >
                 <option value="">Selecione</option>
                 {clients.map((c) => (
@@ -50,7 +59,7 @@ export default async function NewRecordPage() {
                 id="appointment_id"
                 name="appointment_id"
                 required
-                className="border-input bg-background flex min-h-11 w-full rounded-md border px-3 text-sm"
+                className={selectFieldClassName}
               >
                 <option value="">Selecione</option>
                 {appointments
@@ -83,7 +92,7 @@ export default async function NewRecordPage() {
               />
             </div>
             <SubmitButton>Salvar registro</SubmitButton>
-          </form>
+          </ResettableForm>
         </CardContent>
       </Card>
     </div>

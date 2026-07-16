@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { refreshAndRedirect } from '@/lib/refresh'
 import { PageHeader } from '@/components/layout/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -7,21 +7,32 @@ import { Textarea } from '@/components/ui/textarea'
 import { listClientsAction } from '@/features/clients/actions'
 import { createAppointmentAction } from '@/features/appointments/actions'
 import { SubmitButton } from '@/components/forms/submit-button'
+import { ResettableForm } from '@/components/forms/resettable-form'
+import { formKeyFromSearchParams } from '@/lib/form-key'
+import { selectFieldClassName } from '@/lib/labels'
+import { getMinDatetimeLocalValue } from '@/lib/datetime'
 
-export default async function NewAppointmentPage() {
+export default async function NewAppointmentPage({
+  searchParams,
+}: {
+  searchParams?: { refreshed?: string | string[]; error?: string }
+}) {
   const clients = await listClientsAction()
+  const minDatetime = getMinDatetimeLocalValue()
+  const formKey = formKeyFromSearchParams(searchParams)
 
   return (
     <div>
-      <PageHeader title="Novo agendamento" />
+      <PageHeader title="Novo agendamento" backHref="/appointments" />
       <Card>
         <CardContent className="pt-6">
-          <form
+          <ResettableForm
+            formKey={formKey}
             action={async (formData) => {
               'use server'
               const result = await createAppointmentAction(formData)
-              if (result.success) redirect('/appointments')
-              redirect('/appointments/new?error=1')
+              if (result.success) refreshAndRedirect('/appointments')
+              refreshAndRedirect('/appointments/new?error=1')
             }}
             className="space-y-4"
           >
@@ -31,7 +42,7 @@ export default async function NewAppointmentPage() {
                 id="client_id"
                 name="client_id"
                 required
-                className="border-input bg-background flex min-h-11 w-full rounded-md border px-3 text-sm"
+                className={selectFieldClassName}
               >
                 <option value="">Selecione</option>
                 {clients.map((c) => (
@@ -48,6 +59,7 @@ export default async function NewAppointmentPage() {
                 name="start_time"
                 type="datetime-local"
                 required
+                min={minDatetime}
                 className="min-h-11"
               />
             </div>
@@ -58,6 +70,7 @@ export default async function NewAppointmentPage() {
                 name="end_time"
                 type="datetime-local"
                 required
+                min={minDatetime}
                 className="min-h-11"
               />
             </div>
@@ -67,7 +80,7 @@ export default async function NewAppointmentPage() {
                 id="buffer_minutes"
                 name="buffer_minutes"
                 defaultValue="0"
-                className="border-input bg-background flex min-h-11 w-full rounded-md border px-3 text-sm"
+                className={selectFieldClassName}
               >
                 <option value="0">0 min</option>
                 <option value="10">10 min</option>
@@ -80,7 +93,7 @@ export default async function NewAppointmentPage() {
               <Textarea id="notes" name="notes" rows={2} />
             </div>
             <SubmitButton>Salvar agendamento</SubmitButton>
-          </form>
+          </ResettableForm>
         </CardContent>
       </Card>
     </div>

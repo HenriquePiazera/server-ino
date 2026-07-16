@@ -4,6 +4,8 @@ import {
   FileText,
   Wallet,
   LayoutDashboard,
+  MessageSquare,
+  Shield,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -20,3 +22,13 @@ export const dashboardNavItems: NavItem[] = [
   { href: '/records', label: 'Histórico', icon: FileText },
   { href: '/payments', label: 'Financeiro', icon: Wallet },
 ]
+
+export const secondaryNavItems: NavItem[] = [
+  { href: '/feedback', label: 'Feedback', icon: MessageSquare },
+]
+
+export const internalNavItem: NavItem = {
+  href: '/internal',
+  label: 'Painel interno',
+  icon: Shield,
+}

@@ -18,6 +18,7 @@ export default async function PaymentsPage() {
       <PageHeader
         title="Financeiro"
         description="Controle de recebimentos"
+        backHref="/dashboard"
         actionHref="/payments/new"
         actionLabel="Novo pagamento"
       />

@@ -1,3 +1,4 @@
+import { isBillingEnabled } from '@/lib/billing'
 import { prisma } from '@/lib/prisma'
 
 export const PLAN_LIMITS = {
@@ -45,6 +46,10 @@ export async function checkPlanLimit(
   userId: string,
   key: PlanLimitKey
 ): Promise<LimitCheckResult> {
+  if (!isBillingEnabled()) {
+    return { allowed: true }
+  }
+
   const user = await prisma.user.findFirst({ where: { id: userId } })
   if (!user) return { allowed: false, errorCode: 'UNAUTHORIZED' }
 
