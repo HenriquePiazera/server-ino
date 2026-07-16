@@ -1,11 +1,10 @@
-# Agenda Multipro / server ino
+# server ino
 
 SaaS de agenda e gestão para profissionais autônomos.
 
 ## Desenvolvimento local
 
 ```bash
-cd agenda-multipro
 npm install
 cp .env.example .env   # configure DATABASE_URL e secrets
 npm run db:push
@@ -39,3 +38,9 @@ npm run build
 
 - `BILLING_ENABLED=false` — sem cobrança, tudo liberado
 - `BETA_ALLOWED_EMAILS` — opcional, restringe cadastro a e-mails convidados
+
+## Deploy na Vercel
+
+- **Project Name:** `server-ino`
+- **Root Directory:** `.` (raiz do repositório)
+- URL padrão: `https://server-ino.vercel.app`

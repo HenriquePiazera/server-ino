@@ -15,7 +15,6 @@ Guia para colocar o **server ino** no ar para amigos testarem, com `BILLING_ENAB
 3. No terminal local (com `.env` apontando para produção):
 
 ```bash
-cd agenda-multipro
 npm run db:push
 npm run db:backfill-v2
 ```
@@ -25,9 +24,10 @@ npm run db:backfill-v2
 
 ## 3. Deploy na Vercel
 
-1. Importe o repositório na Vercel.
-2. **Root Directory:** `agenda-multipro` (se o repo tiver pasta pai).
-3. Framework: Next.js (detectado automaticamente).
+1. Importe o repositório **server-ino** na Vercel.
+2. **Project Name:** `server-ino`
+3. **Root Directory:** `.` (raiz do repositório — não use subpasta)
+4. Framework: Next.js (detectado automaticamente).
 
 ### Variáveis de ambiente (Production)
 
@@ -36,7 +36,7 @@ npm run db:backfill-v2
 | `DATABASE_URL` | Sim | Session pooler Supabase |
 | `AUTH_SECRET` | Sim | `openssl rand -base64 32` |
 | `NEXTAUTH_SECRET` | Sim | Mesmo valor do `AUTH_SECRET` |
-| `NEXTAUTH_URL` | Sim | `https://seu-app.vercel.app` |
+| `NEXTAUTH_URL` | Sim | `https://server-ino.vercel.app` ou seu domínio |
 | `ENCRYPTION_MASTER_KEY` | Sim | **Faça backup** — perder = perder dados criptografados |
 | `BILLING_ENABLED` | Sim | `false` |
 | `CRON_SECRET` | Sim | `openssl rand -hex 32` — Vercel envia no cron |

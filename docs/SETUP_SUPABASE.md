@@ -1,4 +1,4 @@
-# Setup Supabase — Agenda Multipro
+# Setup Supabase — server ino
 
 ## 1. Criar projeto
 
@@ -23,10 +23,10 @@ Recomendado: em **Database → Settings**, use **Generate password** (senha sem 
 
 ## 3. Configurar variáveis de ambiente
 
-Na pasta `agenda-multipro/`:
+Na raiz do projeto (`server-ino/`):
 
 ```powershell
-cd D:\saas-agenda-multipro\agenda-multipro
+cd D:\server-ino
 node scripts/generate-secrets.mjs
 ```
 

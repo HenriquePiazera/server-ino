@@ -5,7 +5,7 @@ import { APP_NAME, APP_TAGLINE, APP_SLOGAN } from '@/lib/brand'
 
 export const metadata: Metadata = {
   title: `${APP_NAME} — ${APP_TAGLINE}`,
-  description: `${APP_SLOGAN} Agenda, clientes, histórico, arquivos e recebimentos. 14 dias grátis, sem cartão.`,
+  description: `${APP_SLOGAN} Beta gratuito — agenda, clientes, histórico, arquivos e recebimentos.`,
 }
 
 export default async function HomePage() {
