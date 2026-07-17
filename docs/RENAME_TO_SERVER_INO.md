@@ -2,34 +2,36 @@
 
 O projeto usa **`server-ino`** em todo lugar (pastas, npm, GitHub, Vercel).
 
-## Estrutura atual
+## Estrutura
 
 | Item | Valor |
 |------|-------|
-| Pasta local | `D:\server-ino` |
+| Pasta local | `D:\saas-server-ino` (ou `D:\server-ino` após renomear) |
 | Repositório GitHub | `HenriquePiazera/server-ino` |
+| Remote git | `https://github.com/HenriquePiazera/server-ino.git` |
 | Nome npm | `server-ino` |
 | Vercel Project Name | `server-ino` |
 | URL padrão | `https://server-ino.vercel.app` |
 
-## GitHub — renomear repositório
+## Renomear no GitHub (uma vez)
 
-Se o remote ainda apontar para `agenda-multipro`:
+1. Abra https://github.com/HenriquePiazera/agenda-multipro/settings
+2. Em **Repository name**, digite `server-ino`
+3. Clique **Rename**
 
-1. Acesse https://github.com/HenriquePiazera/agenda-multipro/settings
-2. **Repository name** → `server-ino` → **Rename**
-3. No terminal:
+O GitHub redireciona URLs antigas automaticamente. O remote local já aponta para `server-ino`.
+
+Validar:
 
 ```powershell
-cd D:\server-ino
-git remote set-url origin https://github.com/HenriquePiazera/server-ino.git
+cd D:\saas-server-ino
+git fetch origin
 git remote -v
-git push
 ```
 
-## Pasta local — renomear (se ainda estiver em `saas-server-ino`)
+## Pasta local (opcional)
 
-Feche o Cursor e execute:
+Para usar `D:\server-ino` no disco, feche o Cursor e execute:
 
 ```powershell
 Move-Item -Path "D:\saas-server-ino" -Destination "D:\server-ino"
