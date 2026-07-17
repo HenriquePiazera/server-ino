@@ -1,27 +1,28 @@
 import { cn } from '@/lib/utils'
+import { BRAND } from '@/lib/brand'
 
 type ShellHeaderProps = {
   children: React.ReactNode
   className?: string
-  zIndex?: 'z-40' | 'z-50'
+  innerClassName?: string
+  /** default = branco (desktop); sidebar = navy (mobile) */
+  tone?: 'default' | 'sidebar'
 }
 
 export function ShellHeader({
   children,
   className,
-  zIndex = 'z-50',
+  innerClassName,
+  tone = 'default',
 }: ShellHeaderProps) {
   return (
     <header
       className={cn(
-        'sticky top-0 w-full border-b bg-background/95 backdrop-blur',
-        zIndex,
+        tone === 'sidebar' ? BRAND.headerMobile : BRAND.header,
         className
       )}
     >
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        {children}
-      </div>
+      <div className={cn(BRAND.headerInner, innerClassName)}>{children}</div>
     </header>
   )
 }

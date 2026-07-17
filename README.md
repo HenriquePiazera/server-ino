@@ -33,6 +33,10 @@ npm run build
 | `npm run db:backfill-v2` | Slugs públicos para usuários antigos |
 | `npm run validate:env` | Valida variáveis de ambiente |
 | `node scripts/test-storage.mjs` | Testa Supabase Storage |
+| `npm run setup:notifications` | Gera chaves VAPID (push PWA) |
+| `npm run test:notifications` | Valida push + Resend |
+
+Guia: **[docs/SETUP_NOTIFICATIONS.md](docs/SETUP_NOTIFICATIONS.md)**
 
 ## Modo beta
 

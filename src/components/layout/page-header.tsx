@@ -24,9 +24,9 @@ export function PageHeader({
         {backHref ? (
           <Button
             asChild
-            variant="outline"
+            variant="ghost"
             size="icon"
-            className="min-h-11 min-w-11 shrink-0"
+            className="min-h-11 min-w-11 shrink-0 text-muted-foreground"
           >
             <Link href={backHref} aria-label={backLabel} title={backLabel}>
               <ArrowLeft className="size-5" />

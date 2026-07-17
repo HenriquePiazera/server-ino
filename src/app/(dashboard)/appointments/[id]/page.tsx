@@ -23,6 +23,7 @@ import {
   APPOINTMENT_STATUS_LABELS,
   selectFieldClassName,
 } from '@/lib/labels'
+import { getAppointmentStatusBadgeVariant } from '@/lib/status-badges'
 
 export default async function AppointmentDetailPage({
   params,
@@ -69,7 +70,7 @@ export default async function AppointmentDetailPage({
         <CardContent className="space-y-4 pt-6">
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground text-sm">Status atual</span>
-            <Badge variant="secondary">
+            <Badge variant={getAppointmentStatusBadgeVariant(appointment.status)}>
               {APPOINTMENT_STATUS_LABELS[appointment.status] ??
                 appointment.status}
             </Badge>
@@ -124,7 +125,7 @@ export default async function AppointmentDetailPage({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="buffer_minutes">Buffer após atendimento (min)</Label>
+              <Label htmlFor="buffer_minutes">Margem após atendimento (min)</Label>
               <select
                 id="buffer_minutes"
                 name="buffer_minutes"

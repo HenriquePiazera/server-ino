@@ -43,7 +43,7 @@ npm run db:backfill-v2
 | `NEXT_PUBLIC_SUPABASE_URL` | Sim | URL do projeto Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Sim | Service role key |
 | `PLATFORM_OWNER_EMAILS` | Sim | Seu e-mail (acesso `/internal`) |
-| `RESEND_API_KEY` | Recomendado | Sem placeholder |
+| `RESEND_API_KEY` | Recomendado | Sem placeholder — ver [SETUP_NOTIFICATIONS.md](./SETUP_NOTIFICATIONS.md) |
 | `RESEND_FROM_EMAIL` | Recomendado | `onboarding@resend.dev` ou domínio verificado |
 | `VAPID_PUBLIC_KEY` | Opcional | `npx web-push generate-vapid-keys` |
 | `VAPID_PRIVATE_KEY` | Opcional | Par do public |

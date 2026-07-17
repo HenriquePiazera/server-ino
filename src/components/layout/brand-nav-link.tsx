@@ -8,6 +8,7 @@ type BrandNavLinkProps = {
   icon?: React.ComponentType<{ className?: string }>
   active?: boolean
   className?: string
+  theme?: 'light' | 'sidebar'
 }
 
 export function BrandNavLink({
@@ -16,13 +17,21 @@ export function BrandNavLink({
   icon: Icon,
   active = false,
   className,
+  theme = 'light',
 }: BrandNavLinkProps) {
+  const linkClass =
+    theme === 'sidebar' ? BRAND.sidebarNavLink : BRAND.navLink
+  const activeClass =
+    theme === 'sidebar' ? BRAND.sidebarNavLinkActive : BRAND.navLinkActive
+  const inactiveClass =
+    theme === 'sidebar' ? BRAND.sidebarNavLinkInactive : BRAND.navLinkInactive
+
   return (
     <Link
       href={href}
       className={cn(
-        BRAND.navLink,
-        active ? BRAND.navLinkActive : BRAND.navLinkInactive,
+        linkClass,
+        active ? activeClass : inactiveClass,
         className
       )}
     >

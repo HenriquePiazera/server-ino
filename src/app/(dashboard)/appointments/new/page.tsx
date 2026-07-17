@@ -75,7 +75,7 @@ export default async function NewAppointmentPage({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="buffer_minutes">Buffer após atendimento (min)</Label>
+              <Label htmlFor="buffer_minutes">Margem após atendimento (min)</Label>
               <select
                 id="buffer_minutes"
                 name="buffer_minutes"

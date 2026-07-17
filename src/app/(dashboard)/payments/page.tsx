@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { listPaymentsAction } from '@/features/payments/actions'
 import { getPaymentMethodLabel } from '@/lib/payment-labels'
+import { getPaymentStatusBadgeVariant } from '@/lib/status-badges'
 
 const statusLabels: Record<string, string> = {
   pending: 'Pendente',
@@ -48,7 +49,10 @@ export default async function PaymentsPage() {
                         currency: 'BRL',
                       })}
                     </p>
-                    <Badge variant="secondary" className="mt-1">
+                    <Badge
+                      variant={getPaymentStatusBadgeVariant(payment.status)}
+                      className="mt-1"
+                    >
                       {statusLabels[payment.status] ?? payment.status}
                     </Badge>
                   </div>

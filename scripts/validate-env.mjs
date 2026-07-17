@@ -87,6 +87,9 @@ if (mode === 'production') {
 } else {
   warnIfMissing('NEXTAUTH_URL', 'padrão localhost:3000')
   warnIfPlaceholder('RESEND_API_KEY')
+  warnIfMissing('VAPID_PUBLIC_KEY', 'push PWA desativado — rode npm run setup:notifications')
+  warnIfMissing('VAPID_PRIVATE_KEY', 'push PWA desativado')
+  warnIfMissing('VAPID_SUBJECT', 'push PWA desativado')
 }
 
 console.log(`\nValidação de ambiente (${mode})\n`)

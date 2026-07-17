@@ -58,6 +58,7 @@ export const authConfig = {
         nextUrl.pathname.startsWith('/appointments') ||
         nextUrl.pathname.startsWith('/records') ||
         nextUrl.pathname.startsWith('/payments') ||
+        nextUrl.pathname.startsWith('/account') ||
         nextUrl.pathname.startsWith('/settings') ||
         nextUrl.pathname.startsWith('/feedback')
 

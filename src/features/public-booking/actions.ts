@@ -149,6 +149,7 @@ export async function createPublicBooking(input: {
       confirmationToken: string
       confirmUrl: string
       emailSent: boolean
+      notificationChannel: 'push' | 'email' | 'none'
     }
   | { success: false; error: string }
 > {
@@ -281,6 +282,7 @@ export async function createPublicBooking(input: {
     confirmationToken: token,
     confirmUrl,
     emailSent: notification.channel === 'email',
+    notificationChannel: notification.channel,
   }
 }
 
@@ -331,7 +333,8 @@ export async function savePushSubscription(input: {
   slug: string
   client_phone: string
   subscription: string
-}): Promise<{ success: boolean }> {
+  appointmentId?: string
+}): Promise<{ success: boolean; pushSent?: boolean }> {
   const professional = await prisma.user.findFirst({
     where: { public_slug: input.slug },
   })
@@ -349,6 +352,46 @@ export async function savePushSubscription(input: {
       pwa_installed_at: new Date(),
     },
   })
+
+  if (input.appointmentId) {
+    const appointment = await prisma.appointment.findFirst({
+      where: {
+        id: input.appointmentId,
+        user_id: professional.id,
+        client_id: client.id,
+      },
+      include: {
+        service: { select: { name: true } },
+        user: { select: { name: true } },
+        confirmations: {
+          where: { status: 'pending' },
+          orderBy: { sent_at: 'desc' },
+          take: 1,
+        },
+      },
+    })
+
+    if (appointment) {
+      const notification = await sendAppointmentNotification({
+        type: 'confirmation',
+        appointment: {
+          id: appointment.id,
+          start_time: appointment.start_time,
+          end_time: appointment.end_time,
+          professionalName: appointment.user.name,
+          serviceName: appointment.service?.name ?? 'Atendimento',
+        },
+        client: {
+          id: client.id,
+          name: client.name,
+          email: client.email,
+          push_subscription: input.subscription,
+        },
+        confirmationToken: appointment.confirmations[0]?.token,
+      })
+      return { success: true, pushSent: notification.channel === 'push' }
+    }
+  }
 
   return { success: true }
 }

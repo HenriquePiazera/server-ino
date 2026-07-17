@@ -30,7 +30,7 @@ export function CopyReminderButton({
     <div className="flex flex-col gap-2">
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         className="min-h-11"
         onClick={() => void handleCopy()}
       >

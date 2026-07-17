@@ -24,10 +24,12 @@ export function SidebarNav({ userName, showInternalLink = false }: SidebarNavPro
   const pathname = usePathname()
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r bg-background md:flex">
-      <div className="border-b px-4 py-4">
-        <Logo href="/dashboard" size="md" className="mb-2 md:hidden" />
-        <p className="truncate font-medium">{userName}</p>
+    <aside className={BRAND.sidebar}>
+      <div className="border-b border-sidebar-border px-4 py-3">
+        <Logo href="/dashboard" size="sm" variant="full" />
+      </div>
+      <div className="border-b border-sidebar-border px-4 py-2">
+        <p className={BRAND.sidebarUserName}>{userName}</p>
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-3">
         {dashboardNavItems.map((item) => (
@@ -37,6 +39,7 @@ export function SidebarNav({ userName, showInternalLink = false }: SidebarNavPro
             label={item.label}
             icon={item.icon}
             active={pathname.startsWith(item.href)}
+            theme="sidebar"
           />
         ))}
         {secondaryNavItems.map((item) => (
@@ -46,6 +49,7 @@ export function SidebarNav({ userName, showInternalLink = false }: SidebarNavPro
             label={item.label}
             icon={item.icon}
             active={pathname.startsWith(item.href)}
+            theme="sidebar"
           />
         ))}
         {showInternalLink ? (
@@ -54,24 +58,29 @@ export function SidebarNav({ userName, showInternalLink = false }: SidebarNavPro
             label={internalNavItem.label}
             icon={internalNavItem.icon}
             active={pathname.startsWith(internalNavItem.href)}
+            theme="sidebar"
           />
         ) : null}
       </nav>
-      <div className="space-y-1 border-t p-3">
+      <div className="space-y-1 border-t border-sidebar-border p-3">
         <Link
           href="/settings"
           className={cn(
-            BRAND.navLink,
+            BRAND.sidebarNavLink,
             pathname.startsWith('/settings')
-              ? BRAND.navLinkActive
-              : BRAND.navLinkInactive
+              ? BRAND.sidebarNavLinkActive
+              : BRAND.sidebarNavLinkInactive
           )}
         >
           <Settings className="size-5 shrink-0" />
           <span>Configurações</span>
         </Link>
         <form action={logoutAction}>
-          <Button type="submit" variant="outline" className="min-h-11 w-full">
+          <Button
+            type="submit"
+            variant="ghost"
+            className="min-h-11 w-full border border-sidebar-border text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
             Sair
           </Button>
         </form>

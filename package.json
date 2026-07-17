@@ -14,6 +14,8 @@
     "db:backfill-v2": "npx tsx scripts/backfill-v2.mts",
     "db:validate": "node scripts/validate-db.mjs",
     "validate:env": "node scripts/validate-env.mjs",
+    "setup:notifications": "node scripts/setup-notifications.mjs",
+    "test:notifications": "node scripts/test-notifications.mjs",
     "test:crypto": "npx tsx scripts/test-crypto.mts"
   },
   "dependencies": {

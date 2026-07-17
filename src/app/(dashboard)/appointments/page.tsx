@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { CopyReminderButton } from '@/features/appointments/copy-reminder-button'
 import { listAppointmentsAction } from '@/features/appointments/actions'
 import { APPOINTMENT_STATUS_LABELS } from '@/lib/labels'
+import { getAppointmentStatusBadgeVariant } from '@/lib/status-badges'
 
 export default async function AppointmentsPage() {
   const appointments = await listAppointmentsAction()
@@ -45,7 +46,7 @@ export default async function AppointmentsPage() {
                           })}
                         </p>
                       </div>
-                      <Badge variant="secondary">
+                      <Badge variant={getAppointmentStatusBadgeVariant(appt.status)}>
                         {APPOINTMENT_STATUS_LABELS[appt.status] ?? appt.status}
                       </Badge>
                     </div>

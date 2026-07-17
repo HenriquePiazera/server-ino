@@ -11,6 +11,8 @@ import {
 import { createPublicBooking } from '@/features/public-booking/actions'
 import type { PublicProfessionalDTO } from '@/features/public-booking/actions'
 import { PublicServicePicker } from '@/features/public-booking/public-service-picker'
+import { PushNotificationPrompt } from '@/components/pwa/push-notification-prompt'
+import { subscribeClientToPush } from '@/lib/push-client'
 
 type Props = {
   professional: PublicProfessionalDTO
@@ -93,41 +95,28 @@ export function PublicBookingForm({ professional, selectedSlug }: Props) {
 
       setConfirmUrl(result.confirmUrl)
 
-      if (result.emailSent) {
+      if (result.notificationChannel === 'push') {
+        setMessage(
+          'Agendamento solicitado! Enviamos a confirmação por notificação no celular.'
+        )
+      } else if (result.notificationChannel === 'email') {
         setMessage(
           'Agendamento solicitado! Verifique seu e-mail para confirmar.'
         )
       } else {
-        setMessage(
-          'Agendamento solicitado! Confirme pelo link abaixo (e-mail automático ainda não configurado).'
-        )
-      }
-
-      if ('serviceWorker' in navigator && 'PushManager' in window) {
-        try {
-          const reg = await navigator.serviceWorker.register('/sw.js')
-          const vapidRes = await fetch('/api/push/vapid')
-          const { publicKey } = await vapidRes.json()
-          if (publicKey) {
-            const permission = await Notification.requestPermission()
-            if (permission === 'granted') {
-              const subscription = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(publicKey),
-              })
-              await fetch('/api/push/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  slug: selectedSlug,
-                  client_phone: phone,
-                  subscription,
-                }),
-              })
-            }
-          }
-        } catch {
-          // push optional
+        const pushOk = await subscribeClientToPush({
+          slug: selectedSlug,
+          client_phone: phone,
+          appointmentId: result.appointmentId,
+        })
+        if (pushOk) {
+          setMessage(
+            'Agendamento solicitado! Confirmação enviada por notificação no celular.'
+          )
+        } else {
+          setMessage(
+            'Agendamento solicitado! Confirme pelo link abaixo ou pelo e-mail, se cadastrou.'
+          )
         }
       }
     })
@@ -237,7 +226,12 @@ export function PublicBookingForm({ professional, selectedSlug }: Props) {
           onChange={(e) => setEmail(e.target.value)}
           className="min-h-11"
         />
+        <p className="text-muted-foreground text-xs">
+          E-mail ou notificações push — usamos o que estiver disponível (grátis).
+        </p>
       </div>
+
+      <PushNotificationPrompt slug={selectedSlug} clientPhone={phone} />
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
       {message ? <p className="text-primary text-sm">{message}</p> : null}
@@ -255,15 +249,4 @@ export function PublicBookingForm({ professional, selectedSlug }: Props) {
       </Button>
     </form>
   )
-}
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i)
-  }
-  return outputArray
 }

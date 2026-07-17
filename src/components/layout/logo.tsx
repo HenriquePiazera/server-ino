@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { APP_LOGO_PATH, APP_NAME } from '@/lib/brand'
@@ -6,42 +5,67 @@ import { APP_LOGO_PATH, APP_NAME } from '@/lib/brand'
 type LogoProps = {
   href?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  /** full = imagem PNG; compact = texto; header = PNG compacto para barra mobile */
+  variant?: 'full' | 'compact' | 'header'
   className?: string
 }
 
-const sizeClasses = {
-  sm: 'h-14 w-auto',
-  md: 'h-24 w-auto',
-  lg: 'h-28 w-auto',
-  xl: 'h-36 w-auto',
+const fullSizeClasses = {
+  sm: 'max-h-20 w-full max-w-[11rem]',
+  md: 'max-h-28 w-full max-w-[14rem]',
+  lg: 'max-h-36 w-full max-w-[18rem]',
+  xl: 'max-h-44 w-full max-w-[22rem]',
 } as const
 
-const imageSizes = {
-  sm: 180,
-  md: 320,
-  lg: 380,
-  xl: 480,
+const headerSizeClasses = 'max-h-11 w-auto max-w-[8.5rem]'
+
+const compactNameClasses = {
+  sm: 'text-base',
+  md: 'text-lg',
+  lg: 'text-xl',
+  xl: 'text-2xl',
 } as const
 
-export function Logo({ href = '/', size = 'md', className }: LogoProps) {
-  const image = (
-    <Image
-      src={APP_LOGO_PATH}
-      alt={APP_NAME}
-      width={imageSizes[size]}
-      height={imageSizes[size]}
-      className={cn(sizeClasses[size], className)}
-      priority={size === 'lg' || size === 'xl'}
-    />
-  )
+export function Logo({
+  href = '/',
+  size = 'md',
+  variant = 'full',
+  className,
+}: LogoProps) {
+  const mark =
+    variant === 'full' ? (
+      // eslint-disable-next-line @next/next/no-img-element -- PNG com texto; next/image quebra SVG/texto
+      <img
+        src={APP_LOGO_PATH}
+        alt={APP_NAME}
+        className={cn('object-contain object-left', fullSizeClasses[size], className)}
+      />
+    ) : variant === 'header' ? (
+      <img
+        src={APP_LOGO_PATH}
+        alt={APP_NAME}
+        className={cn('object-contain object-left', headerSizeClasses, className)}
+      />
+    ) : (
+      <div className={cn('flex flex-col leading-tight', className)}>
+        <span
+          className={cn(
+            'font-bold tracking-tight text-primary',
+            compactNameClasses[size]
+          )}
+        >
+          {APP_NAME}
+        </span>
+      </div>
+    )
 
   if (!href) {
-    return image
+    return mark
   }
 
   return (
-    <Link href={href} className="inline-flex shrink-0 items-center">
-      {image}
+    <Link href={href} className="inline-flex shrink-0 items-center no-underline">
+      {mark}
     </Link>
   )
 }

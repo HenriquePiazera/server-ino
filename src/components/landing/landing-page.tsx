@@ -87,7 +87,7 @@ export function LandingPage({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   return (
     <div className={BRAND.surface}>
       <ShellHeader>
-        <Logo href="/" size="md" />
+        <Logo href="/" size="md" variant="full" />
         <nav className="flex items-center gap-2 sm:gap-3">
             {isLoggedIn ? (
               <Button asChild className="min-h-11">
