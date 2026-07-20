@@ -14,6 +14,16 @@ import { z } from 'zod'
 import QRCode from 'qrcode'
 import { getAppBaseUrl } from '@/lib/app-url'
 import { ensurePublicSlug } from '@/features/public-booking/actions'
+import { checkPlanLimit } from '@/lib/plan-limits'
+import {
+  DEFAULT_CONFIRMATION_HOURS_BEFORE,
+  DEFAULT_REMINDER_HOURS_BEFORE,
+  isConfirmationHoursBefore,
+  isReminderHoursBefore,
+  type ConfirmationHoursBefore,
+  type ReminderHoursBefore,
+} from '@/lib/reminder-settings'
+import { notificationSettingsSchema } from '@/schemas/notification-settings.schema'
 
 const publicProfileSchema = z.object({
   public_bio: z.string().max(500).optional(),
@@ -116,4 +126,68 @@ export async function generatePublicQrCodeAction(): Promise<
   const dataUrl = await QRCode.toDataURL(url, { width: 280, margin: 2 })
 
   return { success: true, data: { dataUrl } }
+}
+
+export type NotificationSettingsDTO = {
+  reminder_hours_before: ReminderHoursBefore
+  confirmation_hours_before: ConfirmationHoursBefore
+  auto_reminders_enabled: boolean
+}
+
+export async function getNotificationSettingsAction(): Promise<NotificationSettingsDTO> {
+  const userId = await requireUserId()
+  const [user, reminderLimit] = await Promise.all([
+    prisma.user.findFirstOrThrow({
+      where: { id: userId },
+      select: {
+        reminder_hours_before: true,
+        confirmation_hours_before: true,
+      },
+    }),
+    checkPlanLimit(userId, 'auto_reminders'),
+  ])
+
+  const reminderHours = user.reminder_hours_before
+  const confirmationHours = user.confirmation_hours_before
+  return {
+    reminder_hours_before: isReminderHoursBefore(reminderHours)
+      ? reminderHours
+      : DEFAULT_REMINDER_HOURS_BEFORE,
+    confirmation_hours_before: isConfirmationHoursBefore(confirmationHours)
+      ? confirmationHours
+      : DEFAULT_CONFIRMATION_HOURS_BEFORE,
+    auto_reminders_enabled: reminderLimit.allowed,
+  }
+}
+
+export async function updateNotificationSettingsAction(
+  formData: FormData
+): Promise<ActionResult> {
+  const userId = await requireUserId()
+  const parsed = notificationSettingsSchema.safeParse({
+    reminder_hours_before: formData.get('reminder_hours_before'),
+    confirmation_hours_before: formData.get('confirmation_hours_before'),
+  })
+
+  if (!parsed.success) return actionError('INVALID_INPUT')
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      reminder_hours_before: parsed.data.reminder_hours_before,
+      confirmation_hours_before: parsed.data.confirmation_hours_before,
+    },
+  })
+
+  const hdrs = await headers()
+  await logAudit({
+    userId,
+    operation: 'user.update_notification_settings',
+    entity: 'User',
+    entityId: userId,
+    ipAddress: getClientIp(hdrs),
+  })
+
+  revalidatePath('/settings/notifications')
+  return { success: true }
 }

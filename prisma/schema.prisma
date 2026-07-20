@@ -92,7 +92,9 @@ model User {
   public_bio              String?
   public_photo_url        String?
   timezone                String     @default("America/Sao_Paulo")
-  created_at              DateTime   @default(now())
+  reminder_hours_before     Int        @default(24)
+  confirmation_hours_before Int        @default(24)
+  created_at                DateTime   @default(now())
   updated_at              DateTime   @updatedAt
 
   clients               Client[]
@@ -196,6 +198,8 @@ model Appointment {
   status         AppointmentStatus @default(scheduled)
   notes          String?
   buffer_minutes Int               @default(0)
+  reminder_sent_at DateTime?
+  confirmation_reminder_sent_at DateTime?
   created_at     DateTime          @default(now())
   updated_at     DateTime          @updatedAt
 

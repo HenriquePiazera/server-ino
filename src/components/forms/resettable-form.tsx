@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import type { ComponentProps, ReactNode } from 'react'
 
 type ResettableFormProps = Omit<ComponentProps<'form'>, 'action'> & {
@@ -13,8 +14,19 @@ export function ResettableForm({
   children,
   ...props
 }: ResettableFormProps) {
+  const formRef = useRef<HTMLFormElement>(null)
+  const key = formKey ?? 'initial'
+  const previousKey = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (previousKey.current !== null && previousKey.current !== key) {
+      formRef.current?.reset()
+    }
+    previousKey.current = key
+  }, [key])
+
   return (
-    <form key={formKey ?? 'initial'} {...props}>
+    <form ref={formRef} key={key} {...props}>
       {children}
     </form>
   )

@@ -94,6 +94,10 @@ export function PublicBookingForm({ professional, selectedSlug }: Props) {
       }
 
       setConfirmUrl(result.confirmUrl)
+      setName('')
+      setPhone('')
+      setEmail('')
+      setSelectedSlot('')
 
       if (result.notificationChannel === 'push') {
         setMessage(

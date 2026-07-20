@@ -151,6 +151,54 @@ export async function sendConfirmationEmail(input: {
   })
 }
 
+export async function sendConfirmationFollowUpEmail(input: {
+  to: string
+  clientName: string
+  professionalName: string
+  serviceName: string
+  startTime: Date
+  confirmUrl: string
+  hoursBefore: number
+}): Promise<{ sent: boolean; error?: string }> {
+  const leadText =
+    input.hoursBefore === 1
+      ? 'em 1 hora'
+      : input.hoursBefore === 24
+        ? 'amanhã'
+        : `em ${input.hoursBefore} horas`
+
+  return sendAppointmentEmail({
+    to: input.to,
+    subject: `Confirme presença — atendimento ${leadText}`,
+    bodyHtml: `
+      <h2>Olá, ${input.clientName}!</h2>
+      <p>Seu atendimento com <strong>${input.professionalName}</strong> é ${leadText} e ainda aguarda confirmação.</p>
+      <p><strong>Serviço:</strong> ${input.serviceName}</p>
+      <p><strong>Data e hora:</strong> ${formatAppointmentDateTime(input.startTime)}</p>
+      <p><a href="${input.confirmUrl}" style="display:inline-block;padding:12px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;">Confirmar agendamento</a></p>
+    `,
+  })
+}
+
+export async function sendScheduledEmail(input: {
+  to: string
+  clientName: string
+  professionalName: string
+  serviceName: string
+  startTime: Date
+}): Promise<{ sent: boolean; error?: string }> {
+  return sendAppointmentEmail({
+    to: input.to,
+    subject: `Agendamento confirmado — ${input.professionalName}`,
+    bodyHtml: `
+      <h2>Olá, ${input.clientName}!</h2>
+      <p>Seu agendamento com <strong>${input.professionalName}</strong> foi registrado.</p>
+      <p><strong>Serviço:</strong> ${input.serviceName}</p>
+      <p><strong>Data e hora:</strong> ${formatAppointmentDateTime(input.startTime)}</p>
+    `,
+  })
+}
+
 export async function sendReminderEmail(input: {
   to: string
   clientName: string
@@ -158,16 +206,25 @@ export async function sendReminderEmail(input: {
   serviceName: string
   startTime: Date
   confirmUrl?: string
+  hoursBefore?: number
 }): Promise<{ sent: boolean; error?: string }> {
+  const leadText =
+    input.hoursBefore === 1
+      ? 'em 1 hora'
+      : input.hoursBefore === 24
+        ? 'amanhã'
+        : input.hoursBefore
+          ? `em ${input.hoursBefore} horas`
+          : 'em breve'
   const confirmBlock = input.confirmUrl
     ? `<p><a href="${input.confirmUrl}">Confirmar presença</a></p>`
     : ''
   return sendAppointmentEmail({
     to: input.to,
-    subject: `Lembrete: atendimento amanhã — ${input.professionalName}`,
+    subject: `Lembrete: atendimento ${leadText} — ${input.professionalName}`,
     bodyHtml: `
       <h2>Olá, ${input.clientName}!</h2>
-      <p>Passando para lembrar do seu atendimento amanhã com <strong>${input.professionalName}</strong>.</p>
+      <p>Passando para lembrar do seu atendimento ${leadText} com <strong>${input.professionalName}</strong>.</p>
       <p><strong>Serviço:</strong> ${input.serviceName}</p>
       <p><strong>Data e hora:</strong> ${formatAppointmentDateTime(input.startTime)}</p>
       ${confirmBlock}

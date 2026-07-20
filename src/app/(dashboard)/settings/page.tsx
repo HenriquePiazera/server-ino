@@ -10,6 +10,11 @@ const settingsLinks = [
     label: 'Horários',
     description: 'Agenda configurável por profissional',
   },
+  {
+    href: '/settings/notifications',
+    label: 'Notificações',
+    description: 'Antecedência do lembrete automático',
+  },
   { href: '/settings/team', label: 'Equipe', description: 'Convidar outros profissionais' },
 ]
 

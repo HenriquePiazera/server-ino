@@ -25,6 +25,8 @@ import { SubmitButton } from '@/components/forms/submit-button'
 import { ResettableForm } from '@/components/forms/resettable-form'
 import { formKeyFromSearchParams } from '@/lib/form-key'
 
+export const dynamic = 'force-dynamic'
+
 export default async function OnboardingPage({
   searchParams,
 }: {

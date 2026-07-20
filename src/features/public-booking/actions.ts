@@ -225,9 +225,14 @@ export async function createPublicBooking(input: {
       },
     })
   } else if (email && !client.email) {
-    await prisma.client.update({
+    client = await prisma.client.update({
       where: { id: client.id },
       data: { email, name: parsed.data.client_name.trim() },
+    })
+  } else if (client.name !== parsed.data.client_name.trim()) {
+    client = await prisma.client.update({
+      where: { id: client.id },
+      data: { name: parsed.data.client_name.trim() },
     })
   }
 

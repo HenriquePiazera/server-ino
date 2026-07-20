@@ -143,12 +143,19 @@ export async function createAppointmentAction(
   })
 
   revalidatePath('/appointments')
+
+  try {
+    await notifyClientAboutAppointment(appointment.id, 'scheduled')
+  } catch {
+    // Notificação não deve bloquear o agendamento
+  }
+
   return { success: true, data: { id: appointment.id } }
 }
 
-async function notifyAppointmentChange(
+async function notifyClientAboutAppointment(
   appointmentId: string,
-  type: 'cancellation' | 'reschedule',
+  type: 'scheduled' | 'cancellation' | 'reschedule',
   confirmationToken?: string
 ) {
   const appointment = await prisma.appointment.findFirst({
@@ -242,6 +249,9 @@ export async function updateAppointmentAction(
       notes: parsed.data.notes ?? null,
       buffer_minutes: parsed.data.buffer_minutes,
       status: parsed.data.status ?? existing.status,
+      ...(timeChanged
+        ? { reminder_sent_at: null, confirmation_reminder_sent_at: null }
+        : {}),
     },
   })
 
@@ -268,7 +278,7 @@ export async function updateAppointmentAction(
       })
       token = confirmation.token
     }
-    await notifyAppointmentChange(id, 'reschedule', token)
+    await notifyClientAboutAppointment(id, 'reschedule', token)
   }
 
   return { success: true }
@@ -286,7 +296,7 @@ export async function cancelAppointmentAction(id: string): Promise<ActionResult>
     data: { status: 'canceled' },
   })
 
-  await notifyAppointmentChange(id, 'cancellation')
+  await notifyClientAboutAppointment(id, 'cancellation')
 
   const hdrs = await headers()
   await logAudit({

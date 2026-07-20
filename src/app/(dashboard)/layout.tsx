@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { BRAND } from '@/lib/brand'
 
+export const dynamic = 'force-dynamic'
+
 function DashboardHeaderActions({
   userName,
   tone = 'light',
