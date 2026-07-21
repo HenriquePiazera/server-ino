@@ -81,9 +81,10 @@ Somente esses e-mails poderão criar conta. Deixe vazio para cadastro aberto.
 
 ## 6. Cron de lembretes
 
-O `vercel.json` agenda o cron **a cada hora**. A rota `/api/cron/reminders` exige:
-
-```
+O `vercel.json` agenda o cron **uma vez por dia** (limite do plano Hobby na Vercel).
+Horário: **11:00 UTC** (~08:00 em Brasília), com margem de ±59 min no Hobby.
+Para execução a cada hora, é necessário plano Pro ou cron externo chamando a rota.
+A rota `/api/cron/reminders` exige:
 Authorization: Bearer <CRON_SECRET>
 ```
 
