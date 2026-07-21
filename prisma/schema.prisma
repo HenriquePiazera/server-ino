@@ -94,6 +94,15 @@ model User {
   timezone                String     @default("America/Sao_Paulo")
   reminder_hours_before     Int        @default(24)
   confirmation_hours_before Int        @default(24)
+  receipt_tax_id            String?
+  receipt_street            String?
+  receipt_address_number    String?
+  receipt_complement        String?
+  receipt_neighborhood      String?
+  receipt_city              String?
+  receipt_state             String?
+  receipt_postal_code       String?
+  receipt_counter           Int        @default(0)
   created_at                DateTime   @default(now())
   updated_at              DateTime   @updatedAt
 
@@ -275,6 +284,8 @@ model Payment {
   payment_method PaymentMethod
   status         PaymentStatus @default(pending)
   paid_at        DateTime?
+  receipt_number Int?
+  receipt_issued_at DateTime?
   created_at     DateTime      @default(now())
 
   user        User         @relation(fields: [user_id], references: [id], onDelete: Cascade)

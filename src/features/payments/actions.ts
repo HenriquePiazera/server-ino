@@ -11,6 +11,13 @@ import {
   type ActionResult,
 } from '@/lib/session'
 import { paymentSchema } from '@/schemas/payment.schema'
+import {
+  formatReceiptAddress,
+  formatReceiptNumber,
+  formatTaxId,
+  type ReceiptAddressParts,
+} from '@/lib/receipt'
+import { getPaymentMethodLabel } from '@/lib/payment-labels'
 
 export type PaymentDTO = {
   id: string
@@ -115,4 +122,137 @@ export async function deletePaymentAction(id: string): Promise<ActionResult> {
 
   revalidatePath('/payments')
   return { success: true }
+}
+
+export type PaymentReceiptDTO = {
+  id: string
+  receipt_label: string
+  issued_at: string
+  paid_at: string
+  amount: number
+  payment_method_label: string
+  reference_description: string
+  professional: {
+    name: string
+    tax_id: string | null
+    address: string | null
+  }
+  client: {
+    name: string
+  }
+}
+
+export async function getPaymentReceiptAction(
+  paymentId: string
+): Promise<ActionResult<PaymentReceiptDTO>> {
+  const userId = await requireUserId()
+
+  const payment = await prisma.payment.findFirst({
+    where: { id: paymentId, user_id: userId },
+    include: {
+      client: { select: { name: true } },
+      appointment: {
+        select: {
+          service: { select: { name: true } },
+        },
+      },
+      user: {
+        select: {
+          name: true,
+          receipt_tax_id: true,
+          receipt_street: true,
+          receipt_address_number: true,
+          receipt_complement: true,
+          receipt_neighborhood: true,
+          receipt_city: true,
+          receipt_state: true,
+          receipt_postal_code: true,
+        },
+      },
+    },
+  })
+
+  if (!payment) return actionError('PAYMENT_NOT_FOUND')
+  if (payment.status !== 'paid') return actionError('RECEIPT_NOT_PAID')
+
+  let receiptNumber = payment.receipt_number
+  let issuedAt = payment.receipt_issued_at ?? payment.paid_at ?? payment.created_at
+
+  if (!receiptNumber) {
+    const updated = await prisma.$transaction(async (tx) => {
+      const current = await tx.payment.findFirst({
+        where: { id: paymentId, user_id: userId, status: 'paid' },
+      })
+      if (!current) return null
+      if (current.receipt_number) return current
+
+      const user = await tx.user.update({
+        where: { id: userId },
+        data: { receipt_counter: { increment: 1 } },
+        select: { receipt_counter: true },
+      })
+
+      return tx.payment.update({
+        where: { id: paymentId },
+        data: {
+          receipt_number: user.receipt_counter,
+          receipt_issued_at: new Date(),
+        },
+      })
+    })
+
+    if (!updated) return actionError('PAYMENT_NOT_FOUND')
+
+    receiptNumber = updated.receipt_number
+    issuedAt = updated.receipt_issued_at ?? updated.paid_at ?? updated.created_at
+
+    const hdrs = await headers()
+    await logAudit({
+      userId,
+      operation: 'payment.receipt.issue',
+      entity: 'Payment',
+      entityId: paymentId,
+      ipAddress: getClientIp(hdrs),
+    })
+  }
+
+  if (!receiptNumber || !issuedAt) return actionError('INTERNAL_ERROR')
+
+  const addressParts: ReceiptAddressParts = {
+    street: payment.user.receipt_street,
+    number: payment.user.receipt_address_number,
+    complement: payment.user.receipt_complement,
+    neighborhood: payment.user.receipt_neighborhood,
+    city: payment.user.receipt_city,
+    state: payment.user.receipt_state,
+    postalCode: payment.user.receipt_postal_code,
+  }
+
+  const serviceName = payment.appointment?.service?.name
+  const referenceDescription = serviceName
+    ? `serviços de ${serviceName}`
+    : 'serviços prestados'
+
+  const paidAt = payment.paid_at ?? payment.created_at
+
+  return {
+    success: true,
+    data: {
+      id: payment.id,
+      receipt_label: formatReceiptNumber(receiptNumber, issuedAt),
+      issued_at: issuedAt.toISOString(),
+      paid_at: paidAt.toISOString(),
+      amount: Number(payment.amount),
+      payment_method_label: getPaymentMethodLabel(payment.payment_method),
+      reference_description: referenceDescription,
+      professional: {
+        name: payment.user.name,
+        tax_id: formatTaxId(payment.user.receipt_tax_id),
+        address: formatReceiptAddress(addressParts),
+      },
+      client: {
+        name: payment.client.name,
+      },
+    },
+  }
 }

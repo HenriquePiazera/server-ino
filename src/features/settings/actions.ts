@@ -24,6 +24,7 @@ import {
   type ReminderHoursBefore,
 } from '@/lib/reminder-settings'
 import { notificationSettingsSchema } from '@/schemas/notification-settings.schema'
+import { receiptSettingsSchema } from '@/schemas/receipt-settings.schema'
 
 const publicProfileSchema = z.object({
   public_bio: z.string().max(500).optional(),
@@ -189,5 +190,80 @@ export async function updateNotificationSettingsAction(
   })
 
   revalidatePath('/settings/notifications')
+  return { success: true }
+}
+
+export type ReceiptSettingsDTO = {
+  receipt_tax_id: string | null
+  receipt_street: string | null
+  receipt_address_number: string | null
+  receipt_complement: string | null
+  receipt_neighborhood: string | null
+  receipt_city: string | null
+  receipt_state: string | null
+  receipt_postal_code: string | null
+}
+
+export async function getReceiptSettingsAction(): Promise<ReceiptSettingsDTO> {
+  const userId = await requireUserId()
+  const user = await prisma.user.findFirstOrThrow({
+    where: { id: userId },
+    select: {
+      receipt_tax_id: true,
+      receipt_street: true,
+      receipt_address_number: true,
+      receipt_complement: true,
+      receipt_neighborhood: true,
+      receipt_city: true,
+      receipt_state: true,
+      receipt_postal_code: true,
+    },
+  })
+
+  return user
+}
+
+export async function updateReceiptSettingsAction(
+  formData: FormData
+): Promise<ActionResult> {
+  const userId = await requireUserId()
+  const parsed = receiptSettingsSchema.safeParse({
+    receipt_tax_id: formData.get('receipt_tax_id'),
+    receipt_street: formData.get('receipt_street'),
+    receipt_address_number: formData.get('receipt_address_number'),
+    receipt_complement: formData.get('receipt_complement'),
+    receipt_neighborhood: formData.get('receipt_neighborhood'),
+    receipt_city: formData.get('receipt_city'),
+    receipt_state: formData.get('receipt_state'),
+    receipt_postal_code: formData.get('receipt_postal_code'),
+  })
+
+  if (!parsed.success) return actionError('INVALID_INPUT')
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      receipt_tax_id: parsed.data.receipt_tax_id ?? null,
+      receipt_street: parsed.data.receipt_street ?? null,
+      receipt_address_number: parsed.data.receipt_address_number ?? null,
+      receipt_complement: parsed.data.receipt_complement ?? null,
+      receipt_neighborhood: parsed.data.receipt_neighborhood ?? null,
+      receipt_city: parsed.data.receipt_city ?? null,
+      receipt_state: parsed.data.receipt_state ?? null,
+      receipt_postal_code: parsed.data.receipt_postal_code ?? null,
+    },
+  })
+
+  const hdrs = await headers()
+  await logAudit({
+    userId,
+    operation: 'user.update_receipt_settings',
+    entity: 'User',
+    entityId: userId,
+    ipAddress: getClientIp(hdrs),
+  })
+
+  revalidatePath('/settings/receipt')
+  revalidatePath('/payments')
   return { success: true }
 }

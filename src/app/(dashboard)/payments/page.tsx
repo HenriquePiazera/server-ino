@@ -1,6 +1,8 @@
+import Link from 'next/link'
 import { PageHeader } from '@/components/layout/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { listPaymentsAction } from '@/features/payments/actions'
 import { getPaymentMethodLabel } from '@/lib/payment-labels'
 import { getPaymentStatusBadgeVariant } from '@/lib/status-badges'
@@ -55,6 +57,18 @@ export default async function PaymentsPage() {
                     >
                       {statusLabels[payment.status] ?? payment.status}
                     </Badge>
+                    {payment.status === 'paid' ? (
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 min-h-11 w-full sm:w-auto"
+                      >
+                        <Link href={`/payments/${payment.id}/receipt`}>
+                          Emitir recibo
+                        </Link>
+                      </Button>
+                    ) : null}
                   </div>
                 </CardContent>
               </Card>

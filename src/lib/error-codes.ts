@@ -28,6 +28,7 @@ export const ERROR_CODES = {
   PASSWORD_RESET_INVALID: 'Link de recuperação inválido ou expirado.',
   RECORD_NOT_FOUND: 'Registro de atendimento não encontrado.',
   PAYMENT_NOT_FOUND: 'Pagamento não encontrado.',
+  RECEIPT_NOT_PAID: 'Só é possível emitir recibo de pagamentos com status pago.',
   APPOINTMENT_PAST_DATE:
     'Não é possível agendar em data ou horário passado.',
 } as const
