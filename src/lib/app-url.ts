@@ -28,3 +28,8 @@ export async function getAppBaseUrl(): Promise<string> {
 export function getAppBaseUrlSync(): string {
   return resolveEnvBaseUrl()
 }
+
+/** URL pública estável para link/QR (prioriza NEXTAUTH_URL / VERCEL_URL). */
+export function getPublicAppBaseUrl(): string {
+  return resolveEnvBaseUrl()
+}

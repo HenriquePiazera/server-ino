@@ -12,7 +12,7 @@ import {
 } from '@/lib/session'
 import { z } from 'zod'
 import QRCode from 'qrcode'
-import { getAppBaseUrl } from '@/lib/app-url'
+import { getPublicAppBaseUrl } from '@/lib/app-url'
 import { ensurePublicSlug } from '@/features/public-booking/actions'
 import { checkPlanLimit } from '@/lib/plan-limits'
 import {
@@ -65,7 +65,7 @@ export async function getAccountSettingsAction(): Promise<AccountSettingsDTO> {
     },
   })
 
-  const baseUrl = await getAppBaseUrl()
+  const baseUrl = getPublicAppBaseUrl()
   const publicUrl = `${baseUrl}/p/${publicSlug}`
 
   return {
@@ -122,7 +122,7 @@ export async function generatePublicQrCodeAction(): Promise<
   const userId = await requireUserId()
   const publicSlug = await ensurePublicSlug(userId)
 
-  const baseUrl = await getAppBaseUrl()
+  const baseUrl = getPublicAppBaseUrl()
   const url = `${baseUrl}/p/${publicSlug}`
   const dataUrl = await QRCode.toDataURL(url, { width: 280, margin: 2 })
 

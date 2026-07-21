@@ -8,6 +8,7 @@ import { isPastDateTime } from '@/lib/datetime'
 import { generatePublicSlug } from '@/lib/slug'
 import { resolveServicePhotoUrl } from '@/lib/service-photo'
 import { checkAppointmentConflict } from '@/services/appointment-conflict.service'
+import { isSlotAvailable } from '@/services/availability-slots.service'
 import { sendAppointmentNotification } from '@/services/notification.service'
 import { z } from 'zod'
 
@@ -160,6 +161,7 @@ export async function createPublicBooking(input: {
 
   const professional = await prisma.user.findFirst({
     where: { public_slug: parsed.data.slug },
+    select: { id: true, public_slug: true, timezone: true },
   })
   if (!professional?.public_slug) {
     return { success: false, error: 'Profissional não encontrado.' }
@@ -188,6 +190,16 @@ export async function createPublicBooking(input: {
 
   if (isPastDateTime(startTime)) {
     return { success: false, error: 'Não é possível agendar em horário passado.' }
+  }
+
+  const slotAllowed = await isSlotAvailable(
+    professional.id,
+    startTime,
+    service.duration_minutes,
+    professional.timezone
+  )
+  if (!slotAllowed) {
+    return { success: false, error: 'Horário indisponível. Escolha outro.' }
   }
 
   const conflict = await checkAppointmentConflict(

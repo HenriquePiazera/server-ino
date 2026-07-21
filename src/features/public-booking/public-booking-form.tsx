@@ -94,10 +94,7 @@ export function PublicBookingForm({ professional, selectedSlug }: Props) {
       }
 
       setConfirmUrl(result.confirmUrl)
-      setName('')
-      setPhone('')
-      setEmail('')
-      setSelectedSlot('')
+      const submittedPhone = phone.trim()
 
       if (result.notificationChannel === 'push') {
         setMessage(
@@ -110,7 +107,7 @@ export function PublicBookingForm({ professional, selectedSlug }: Props) {
       } else {
         const pushOk = await subscribeClientToPush({
           slug: selectedSlug,
-          client_phone: phone,
+          client_phone: submittedPhone,
           appointmentId: result.appointmentId,
         })
         if (pushOk) {
@@ -123,6 +120,11 @@ export function PublicBookingForm({ professional, selectedSlug }: Props) {
           )
         }
       }
+
+      setName('')
+      setPhone('')
+      setEmail('')
+      setSelectedSlot('')
     })
   }
 

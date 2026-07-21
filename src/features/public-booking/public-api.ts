@@ -6,6 +6,7 @@ import {
   getAvailableSlots,
 } from '@/services/availability-slots.service'
 import { prisma } from '@/lib/prisma'
+import { resolveTimeZone } from '@/lib/timezone-datetime'
 
 export async function fetchPublicProfessionalAction(slug: string) {
   return getPublicProfessionalBySlug(slug)
@@ -27,8 +28,12 @@ export async function fetchPublicSlotsAction(input: {
   })
   if (!service) return []
 
-  const date = input.date
-  return getAvailableSlots(user.id, date, service.duration_minutes)
+  return getAvailableSlots(
+    user.id,
+    input.date,
+    service.duration_minutes,
+    resolveTimeZone(user.timezone)
+  )
 }
 
 export async function fetchPublicDatesAction(input: {
@@ -37,7 +42,7 @@ export async function fetchPublicDatesAction(input: {
 }) {
   const user = await prisma.user.findFirst({
     where: { public_slug: input.slug },
-    select: { id: true },
+    select: { id: true, timezone: true },
   })
   if (!user) return []
 
@@ -46,5 +51,9 @@ export async function fetchPublicDatesAction(input: {
   })
   if (!service) return []
 
-  return getAvailableDates(user.id, service.duration_minutes)
+  return getAvailableDates(
+    user.id,
+    service.duration_minutes,
+    resolveTimeZone(user.timezone)
+  )
 }

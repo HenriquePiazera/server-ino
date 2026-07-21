@@ -1,11 +1,14 @@
 import { prisma } from '@/lib/prisma'
 import { checkAppointmentConflict } from '@/services/appointment-conflict.service'
 import {
-  buildLocalDateTime,
-  formatLocalDateKey,
-  isPastDateTime,
-  parseLocalDateKey,
-} from '@/lib/datetime'
+  addDaysToDateKey,
+  buildZonedDateTime,
+  formatDateKeyInTimeZone,
+  getDayOfWeekInTimeZone,
+  getTodayDateKeyInTimeZone,
+  isPastDateTimeInTimeZone,
+  resolveTimeZone,
+} from '@/lib/timezone-datetime'
 
 export type TimeSlot = {
   start: string
@@ -13,7 +16,8 @@ export type TimeSlot = {
 }
 
 function parseTimeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number)
+  const normalized = time.slice(0, 5)
+  const [hours, minutes] = normalized.split(':').map(Number)
   return hours * 60 + minutes
 }
 
@@ -26,10 +30,11 @@ function minutesToTime(totalMinutes: number): string {
 export async function getAvailableSlots(
   userId: string,
   dateKey: string,
-  durationMinutes: number
+  durationMinutes: number,
+  timeZone = resolveTimeZone()
 ): Promise<TimeSlot[]> {
-  const date = parseLocalDateKey(dateKey)
-  const dayOfWeek = date.getDay()
+  const tz = resolveTimeZone(timeZone)
+  const dayOfWeek = getDayOfWeekInTimeZone(dateKey, tz)
 
   const blocks = await prisma.availability.findMany({
     where: {
@@ -45,6 +50,7 @@ export async function getAvailableSlots(
   }
 
   const slots: TimeSlot[] = []
+  const slotStepMinutes = Math.min(durationMinutes, 30)
 
   for (const block of blocks) {
     const blockStart = parseTimeToMinutes(block.start_time)
@@ -53,15 +59,15 @@ export async function getAvailableSlots(
     for (
       let minute = blockStart;
       minute + durationMinutes <= blockEnd;
-      minute += durationMinutes
+      minute += slotStepMinutes
     ) {
       const startTime = minutesToTime(minute)
       const endTime = minutesToTime(minute + durationMinutes)
 
-      const startDate = buildLocalDateTime(dateKey, startTime)
-      const endDate = buildLocalDateTime(dateKey, endTime)
+      const startDate = buildZonedDateTime(dateKey, startTime, tz)
+      const endDate = buildZonedDateTime(dateKey, endTime, tz)
 
-      if (isPastDateTime(startDate)) {
+      if (isPastDateTimeInTimeZone(startDate, tz)) {
         continue
       }
 
@@ -87,22 +93,32 @@ export async function getAvailableSlots(
 export async function getAvailableDates(
   userId: string,
   durationMinutes: number,
+  timeZone = resolveTimeZone(),
   daysAhead = 30
 ): Promise<string[]> {
+  const tz = resolveTimeZone(timeZone)
   const dates: string[] = []
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  let dateKey = getTodayDateKeyInTimeZone(tz)
 
   for (let i = 0; i < daysAhead; i++) {
-    const date = new Date(today)
-    date.setDate(today.getDate() + i)
-    const dateKey = formatLocalDateKey(date)
-
-    const slots = await getAvailableSlots(userId, dateKey, durationMinutes)
+    const slots = await getAvailableSlots(userId, dateKey, durationMinutes, tz)
     if (slots.length > 0) {
       dates.push(dateKey)
     }
+    dateKey = addDaysToDateKey(dateKey, 1, tz)
   }
 
   return dates
+}
+
+export async function isSlotAvailable(
+  userId: string,
+  startTime: Date,
+  durationMinutes: number,
+  timeZone = resolveTimeZone()
+): Promise<boolean> {
+  const tz = resolveTimeZone(timeZone)
+  const dateKey = formatDateKeyInTimeZone(startTime, tz)
+  const slots = await getAvailableSlots(userId, dateKey, durationMinutes, tz)
+  return slots.some((slot) => new Date(slot.start).getTime() === startTime.getTime())
 }

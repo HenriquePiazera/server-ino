@@ -118,9 +118,10 @@ export default async function PublicSettingsPage({
             <CardContent className="space-y-3">
               <PublicQrCode publicUrl={account.public_url} />
               <p className="text-muted-foreground text-xs">
-                O link usa o endereço atual do navegador. Para testar no celular na
-                mesma rede, acesse o app pelo IP do computador (ex.:{' '}
-                <code>http://192.168.x.x:3000</code>) antes de copiar o QR Code.
+                O link usa a URL pública configurada em NEXTAUTH_URL (produção) ou
+                o endereço atual do navegador (desenvolvimento). Para testar no
+                celular em rede local, abra o app pelo IP do computador antes de
+                copiar o QR Code.
               </p>
             </CardContent>
           </Card>
