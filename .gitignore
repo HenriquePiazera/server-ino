@@ -28,6 +28,9 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+.env.vercel
+vercel-import.env
+vercel-bulk-paste.txt
 /chave/
 
 # prisma generated client
